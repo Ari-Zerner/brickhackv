@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, RecordWildCards, DuplicateRecordFields, ParallelListComp #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, RecordWildCards, DuplicateRecordFields, ParallelListComp, NamedFieldPuns #-}
 
 ------------------------------------------------------------------------------
 -- | This module is where all the routes and handlers are defined for your
@@ -10,11 +10,14 @@ module Site
 
 ------------------------------------------------------------------------------
 import           Control.Applicative
+import           Control.Monad
 import           Control.Monad.IO.Class
+import           Control.Monad.Fail
 import           Data.ByteString (ByteString)
 import           Data.ByteString.Internal (unpackChars)
 import           Data.Aeson (encode, decode, ToJSON, FromJSON)
 import           Data.Map.Syntax ((##))
+import           Data.String (IsString (..))
 import qualified Data.Text as T
 import           Snap.Core
 import           Snap.Snaplet
@@ -55,28 +58,29 @@ jsonResponse a = do
 
 type Endpoint = Handler App (AuthManager App) ()
 
+
+------------------------------------------------------------------------------
+-- | Logs out and redirects the user to the site index.
+handleLogout :: Handler App (AuthManager App) ()
+handleLogout = logout >> redirect "/"
+
+
 ------------------------------------------------------------------------------
 handleAttemptLogin :: Endpoint
 handleAttemptLogin = do
   HTTPLogin{..} <- bodyJson
-  let dummy = HTTPUser{id = 0, name = "", email = "", authenticated = True, ..}
-  jsonResponse dummy
-
-
-------------------------------------------------------------------------------
-handleLogout :: Endpoint
-handleLogout = do
-  HTTPUser{..} <- bodyJson
-  let dummy = HTTPUser{authenticated = False, ..}
-  jsonResponse dummy
-
+  result <- loginByUsername username (ClearText $ fromString $ T.unpack password) True
+  user <- case result of
+    Left _ -> getResponse >>= finishWith . setResponseStatus 403 ("Failed auth")
+    Right u -> return u
+  jsonResponse user
 
 ------------------------------------------------------------------------------
 handleCreateUser :: Endpoint
 handleCreateUser = do
   HTTPCreateUser{..} <- bodyJson
-  let dummy = HTTPNewUser{id = Just 0, name = fullname, authenticated = False, ..}
-  jsonResponse dummy
+  createUser username (fromString $ T.unpack password)
+  jsonResponse True
 
 
 ------------------------------------------------------------------------------
@@ -86,15 +90,16 @@ handleCreateDebate = do
   let dummy = HTTPNewDebate{id = Just 0, ..}
   jsonResponse dummy
 
-
 ------------------------------------------------------------------------------
 handleDebateList :: Endpoint
 handleDebateList = do
-  r1 <- traverse (\_ -> liftIO $ randomRIO (0, 99999)) [0..14]
-  r2 <- traverse (\_ -> liftIO $ randomRIO (0, 99999)) [0..14]
-  rb1 <- traverse (\_ -> liftIO $ randomIO) [0..14]
-  rb2 <- traverse (\_ -> liftIO $ randomIO) [0..14]
-  rb3 <- traverse (\_ -> liftIO $ randomIO) [0..14]
+  let maxVal = 99999 :: Int
+      count = [0..14] :: [Int]
+  r1 <- traverse (\_ -> liftIO $ randomRIO (0, maxVal)) count
+  r2 <- traverse (\_ -> liftIO $ randomRIO (0, maxVal)) count
+  rb1 <- traverse (\_ -> liftIO $ randomIO) count
+  rb2 <- traverse (\_ -> liftIO $ randomIO) count
+  rb3 <- traverse (\_ -> liftIO $ randomIO) count
   let dummy = [ HTTPDebate
         { id = i
         , title = "Debate"
@@ -112,6 +117,40 @@ handleDebateList = do
 
 
 ------------------------------------------------------------------------------
+
+bayesianRating :: Double -> -- |^ bayesian average
+                  Int -> -- |^ bayesian vote count
+                  Int -> -- |^ upvotes
+                  Int -> -- |^ of total
+                  Double -- |^ percentage rating in 0..1
+bayesianRating avg count votesFor total =
+  (fromIntegral count * avg + fromIntegral votesFor) /
+  (fromIntegral count +       fromIntegral total)
+
+getWins :: (HasPostgres m, MonadFail m) =>
+           Id -> -- |^ opinion id
+           m (Int, Int) -- |^ wins, total
+getWins id = do
+  -- TODO: this is slow, we should store the count in the db and increment
+  [Only wins] <- query "SELECT COUNT(*) FROM votes WHERE winner=?" (Only id)
+  [Only losses] <- query "SELECT COUNT(*) FROM votes WHERE loser=?" (Only id)
+  return (wins, wins + losses)
+
+getOpinionsWithRanking :: (HasPostgres m, MonadFail m) =>
+                         Id -> -- |^ debate id
+                         m [HTTPOpinion]
+getOpinionsWithRanking id = do
+  sqlOpinions <- query "SELECT * FROM opinions WHERE debate=?" (Only id)
+  forM sqlOpinions $
+    \SQLOpinion {uid, description, author, ..} -> do
+      (wins, total) <- getWins uid
+      let ranking = bayesianRating 0.5 10 wins total
+      return $ HTTPOpinion
+        { id = uid
+        , authorId = author
+        , description = description
+        , ranking = ranking
+        }
 
 handleDebate :: Endpoint
 handleDebate = do
@@ -151,7 +190,10 @@ handleVote = do
 ------------------------------------------------------------------------------
 handleOpine :: Endpoint
 handleOpine = do
-  let dummy = True
+  did :: Id <- pathParam "debateId"
+  HTTPNewOpinion {..} <- bodyJson
+  -- [id] <- get from auth?
+  let dummy = 0 :: Id
   jsonResponse dummy
 
 
@@ -165,9 +207,9 @@ routes = fmap (with auth) <$>
          , ("create-debate",                post handleCreateDebate)
          , ("debate-list",                   get handleDebateList)
          , ("debate/:debate",                get handleDebate)
-         , ("opinion-pair/:debateId",        get handleOpinionPair)
+         , ("opinion-pair/:debateId",       post handleOpinionPair)
          , ("vote",                         post handleVote)
-         , ("opine",                        post handleOpine)
+         , ("opine/:debateId",              post handleOpine)
          ]
          where post = method POST
                get  = method GET
@@ -180,7 +222,7 @@ app = makeSnaplet "app" "An snaplet example application." Nothing $ do
     h <- nestSnaplet "" heist $ heistInit "templates"
     s <- nestSnaplet "sess" sess $
            initCookieSessionManager "site_key.txt" "sess" Nothing (Just 3600)
-    let dbEnabled = False
+    let dbEnabled = True
     if dbEnabled
       then do
         d <- nestSnaplet "db" db $ pgsInit' $ pgsDefaultConfig "host=localhost port=5432 dbname=debate"
