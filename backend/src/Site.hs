@@ -22,8 +22,8 @@ import           Snap.Snaplet.Auth
 import           Snap.Snaplet.Auth.Backends.JsonFile
 import           Snap.Snaplet.Heist
 import           Snap.Snaplet.Session.Backends.CookieSession
--- import           Snap.Snaplet.PostgresqlSimple
--- import           Snap.Snaplet.Auth.Backends.PostgresqlSimple
+import           Snap.Snaplet.PostgresqlSimple
+import           Snap.Snaplet.Auth.Backends.PostgresqlSimple
 import           Snap.Util.FileServe
 import           System.Random
 import           Text.Read (readMaybe)
@@ -39,7 +39,7 @@ pathParam name = do
     val <- getParam name
     case unpackChars <$> val >>= readMaybe of
         Just a -> return a
-        Nothing -> getResponse >>= finishWith . setResponseStatus 400 ("Bad/missing path parameter ")
+        Nothing -> getResponse >>= finishWith . setResponseStatus 400 ("Bad/missing path parameter: " <> name)
 
 bodyJson :: (MonadSnap m, FromJSON a) => m a
 bodyJson = do
@@ -112,9 +112,23 @@ handleDebateList = do
 
 
 ------------------------------------------------------------------------------
+
 handleDebate :: Endpoint
 handleDebate = do
-  let dummy = Nothing :: Maybe HTTPDebateDetail
+  id <- pathParam "debate"
+  viewCount <- liftIO $ randomRIO (0, 9999)
+  opinionCount <- liftIO $ randomRIO (0, 9999)
+  [opined, voted, bookmarked] <- sequence $ replicate 3 (liftIO randomIO)
+  let dummy = HTTPDebateDetail
+        { title = "Debate"
+        , imageUrl = "https://i.huffpost.com/gadgets/slideshows/407618/slide_407618_5105750_free.jpg"
+        , subtitle = "What to do"
+        , description = "We're confused"
+        , opinions = []
+        , myOpinion = Nothing
+        , .. }
+
+
   jsonResponse dummy
 
 
@@ -166,10 +180,16 @@ app = makeSnaplet "app" "An snaplet example application." Nothing $ do
     h <- nestSnaplet "" heist $ heistInit "templates"
     s <- nestSnaplet "sess" sess $
            initCookieSessionManager "site_key.txt" "sess" Nothing (Just 3600)
-    -- d <- nestSnaplet "db" db $ pgsInit' $ pgsDefaultConfig "host=localhost port=5432 dbname=debate"
-    -- a <- nestSnaplet "auth" auth $ initPostgresAuth sess d
-    a <- nestSnaplet "auth" auth $
-           initJsonFileAuthManager defAuthSettings sess "users.json"
-    addRoutes routes
-    addAuthSplices h auth
-    return $ App h s a --d
+    let dbEnabled = False
+    if dbEnabled
+      then do
+        d <- nestSnaplet "db" db $ pgsInit' $ pgsDefaultConfig "host=localhost port=5432 dbname=debate"
+        a <- nestSnaplet "auth" auth $ initPostgresAuth sess d
+        addRoutes routes
+        addAuthSplices h auth
+        return $ App h s a d
+      else do
+        a <- nestSnaplet "auth" auth $ initJsonFileAuthManager defAuthSettings sess "users.json"
+        addRoutes routes
+        addAuthSplices h auth
+        return $ App h s a undefined
