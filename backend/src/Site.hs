@@ -60,12 +60,6 @@ type Endpoint = Handler App (AuthManager App) ()
 
 
 ------------------------------------------------------------------------------
--- | Logs out and redirects the user to the site index.
-handleLogout :: Handler App (AuthManager App) ()
-handleLogout = logout >> redirect "/"
-
-
-------------------------------------------------------------------------------
 handleAttemptLogin :: Endpoint
 handleAttemptLogin = do
   HTTPLogin{..} <- bodyJson
@@ -74,6 +68,15 @@ handleAttemptLogin = do
     Left _ -> getResponse >>= finishWith . setResponseStatus 403 ("Failed auth")
     Right u -> return u
   jsonResponse user
+
+
+------------------------------------------------------------------------------
+handleLogout :: Handler App (AuthManager App) ()
+handleLogout = do
+  HTTPUser{..} <- bodyJson
+  logout
+  jsonResponse HTTPUser{authenticated = False, ..}
+
 
 ------------------------------------------------------------------------------
 handleCreateUser :: Endpoint
