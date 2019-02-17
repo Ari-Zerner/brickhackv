@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 
 ------------------------------------------------------------------------------
 -- | This module is where all the routes and handlers are defined for your
@@ -11,7 +11,8 @@ module Site
 ------------------------------------------------------------------------------
 import           Control.Applicative
 import           Data.ByteString (ByteString)
-import           Data.Aeson (encode, decode)
+import           Data.ByteString.Internal (unpackChars)
+import           Data.Aeson (encode, decode, ToJSON, FromJSON)
 import           Data.Map.Syntax ((##))
 import qualified Data.Text as T
 import           Snap.Core
@@ -21,10 +22,31 @@ import           Snap.Snaplet.Auth.Backends.JsonFile
 import           Snap.Snaplet.Heist
 import           Snap.Snaplet.Session.Backends.CookieSession
 import           Snap.Util.FileServe
+import           Text.Read (readMaybe)
 import qualified Heist.Interpreted as I
 ------------------------------------------------------------------------------
 import           Application
 import           Data
+
+------------------------------------------------------------------------------
+
+decodeParam :: (MonadSnap m, Read a) => ByteString -> m a
+decodeParam name = do
+    val <- getParam name
+    case unpackChars <$> val >>= readMaybe of
+        Just a -> return a
+        Nothing -> do
+            resp <- getResponse
+            finishWith $
+                setResponseStatus 400 ("Bad/missing path parameter ") $
+                resp
+
+jsonResponse :: (MonadSnap m, ToJSON a) => a -> m ()
+jsonResponse a = do
+    writeLBS $ encode a
+    modifyResponse $ setHeader "Content-Type" "application/json"
+
+
 
 ------------------------------------------------------------------------------
 -- | Render login form
@@ -63,33 +85,51 @@ handleNewUser = method GET handleForm <|> method POST handleFormSubmit
 handleSubjects :: Handler App (AuthManager App) ()
 handleSubjects = method GET allSubjects
     where
-        allSubjects = writeLBS $ encode $ [ Subject 0 "dummy" "a topic" ]
+        allSubjects = jsonResponse $ [ Subject 0 "dummy" "a topic" ]
 
 handleSubject :: Handler App (AuthManager App) ()
-handleSubject = getParam "subject" >>= \sid -> method GET (getSubject sid)
+handleSubject = decodeParam "subject" >>= \sid -> method GET (getSubject sid)
     where
-        getSubject sid = writeLBS $ encode $ Subject 3 "dummy2" "another topic"
+        getSubject sid = jsonResponse $ Subject sid "dummy2" "another topic"
 
 ------------------------------------------------------------------------------
-handleOpinion :: Handler App (AuthManager App) ()
-handleOpinion = method GET allOpinions
+
+handleOpinions :: Handler App (AuthManager App) ()
+handleOpinions = method GET allOpinions
     where
-        allOpinions =  writeLBS $ encode $ [ Opinion 1 "it's bad" 2 ]
+        allOpinions = jsonResponse $ [ Opinion 0 "is bad" 1 ]
+
+------------------------------------------------------------------------------
+handleVotes :: Handler App (AuthManager App) ()
+handleVotes = decodeParam "subject" >>= \sid ->
+    method POST (allVotes sid)
+    where
+        opinion1 = Opinion 0 "All weapons should be banned" 0
+        opinion2 = Opinion 1 "Three guns per child" 1
+        allVotes sid = jsonResponse $ Vote 0 [opinion1, opinion2] sid
+
+handleVote :: Handler App (AuthManager App) ()
+handleVote = do
+    sid :: Integer <- decodeParam "subject"
+    vid :: Integer <- decodeParam "vote"
+    method POST pass
 
 ------------------------------------------------------------------------------
 -- | The application's routes.
 routes :: [(ByteString, Handler App App ())]
-routes = [ ("login",    with auth handleLoginSubmit)
-         , ("logout",   with auth handleLogout)
-         , ("new_user", with auth handleNewUser)
-         , ("hello",    render "hello")
+routes = fmap (with auth) <$>
+         [ ("login",                        handleLoginSubmit)
+         , ("logout",                       handleLogout)
+         , ("new_user",                     handleNewUser)
+         , ("hello",                        render "hello")
 
-         , ("subject",  with auth handleSubjects)
-         , ("subject/:subject",
-                        with auth handleSubject)
-         , ("opinion",  with auth handleOpinion)
-
-         , ("",         serveDirectory "static")
+         , ("subject",                      handleSubjects)
+         , ("subject/:subject",             handleSubject)
+         , ("subject/:subject/opinion",     handleOpinions)
+         , ("subject/:subject/vote",        handleVotes)
+         , ("subject/:subject/vote/:vote",  handleVote)
+         ] ++
+         [ ("",         serveDirectory "static")
          ]
 
 
