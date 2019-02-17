@@ -12,7 +12,7 @@ import { Opinion } from '../models/opinion';
 })
 export class DebateComponent implements OnInit {
 
-	debate:Debate;
+	debate:Debate = null;
 	usersOpinion:string;
 
 	constructor(private userService:UserService, private route: ActivatedRoute,) { }
@@ -20,17 +20,17 @@ export class DebateComponent implements OnInit {
 	ngOnInit() {
 		const id = +this.route.snapshot.paramMap.get('id');
 		this.userService.getDebate(id).subscribe((_)=>{
-			// this.debate = _;
+			this.debate = _;
 
 			//dev purposes only
-			this.debate = new Debate();
-			this.debate.id = 1;
-			this.debate.title = "my debate";
-			this.debate.subtitle = "some brief description of the debate";
-			this.debate.description = "a realllyyyyy long description";
-			this.debate.opinionCount = 234;
-			this.debate.viewCount = 5231;
-			this.debate.myOpinion = null;
+			// this.debate = new Debate();
+			// this.debate.id = 1;
+			// this.debate.title = "my debate";
+			// this.debate.subtitle = "some brief description of the debate";
+			// this.debate.description = "a realllyyyyy long description";
+			// this.debate.opinionCount = 234;
+			// this.debate.viewCount = 5231;
+			// this.debate.myOpinion = null;
 		});
 	}
 

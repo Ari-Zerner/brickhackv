@@ -1,10 +1,8 @@
-<p>
-  opinion-voting works!
-</p>
 
-{{debate.title}}
 
-<div *ngIf="opinionList && opinionList.length()>=2">
-	<h1>opinionList[0].description</h1>
-	<h1>opinionList[1].description</h1>
+<div class="opinion-container">
+	<div *ngFor="let opinion of opinionList"
+		class="opinion-box">
+				<h3>{{opinion.description}}</h3>
+	</div>
 </div>

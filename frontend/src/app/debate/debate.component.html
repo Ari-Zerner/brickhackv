@@ -1,21 +1,44 @@
 <app-topbar></app-topbar>
 
-<p>
-  debate works!
-</p>
+
 
 <div *ngIf="debate">
-	{{debate.title}}
 
+	<div id="form-container">
 
-	Vote for the better opinion
-	<app-opinion-voting [debate]="debate"></app-opinion-voting>
-
-	<app-vote-distribution [debate]="debate"></app-vote-distribution>
-
-
-	<input [(ngModel)]="usersOpinion" placeholder="Write your opinion"/>
-	<input type="button" value="Signup" (click)="postOpinion()">
+			<img 
+			id="debate-image"
+			src="http://cdnapisec.kaltura.com/p/618072/sp/61807200/thumbnail/entry_id/0_jdawzav7/version/100002/width/412/height/256"
+				alt="Debate thumbnail">
+		
+			<div class="linear-field">
+				<h1>{{debate.title}}</h1>
+			</div>
+			<div class="linear-field">
+				<h2>{{debate.subtitle}}</h2>
+			</div>
+			<div class="linear-field">
+				<h2>{{debate.description}}</h2>
+			</div>
+			<div class="linear-field">
+				<h2>{{debate.viewCount}} Views</h2>
+			</div>
+			
+			Vote for the better opinion
+			<app-opinion-voting [debate]="debate"></app-opinion-voting>
+		
+			<app-vote-distribution [debate]="debate"></app-vote-distribution>
+		
+			<div *ngIf="!debate.myOpinion">
+				<input class="textfield" [(ngModel)]="usersOpinion" placeholder="Write your opinion"/>
+				<input class="submit-btn" type="button" value="Comment" (click)="postOpinion()">
+			</div>
+		
+			<div *ngIf="debate.myOpinion">
+				<h1>Your Opinion</h1>
+				<h2>{{debate.myOpinion.description}}</h2>
+			</div>
+	</div>
 
 
 </div>
