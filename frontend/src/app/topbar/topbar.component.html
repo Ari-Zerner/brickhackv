@@ -1,11 +1,23 @@
-<a routerLink="/dashboard">Home</a>
-<input [(ngModel)]="searchTerm" placeholder="Search" (keyup.enter)="search()"/>
-<a routerLink="/create-debate">Create debate</a>
-<input type="button" value="Logout" (click)="logout()">
+<div id="topbar-container">
+	<a routerLink="/dashboard">
+		<svg id="home-icon" width="25px" height="30px" viewBox="0 0 32 49" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+			<g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+				<g id="Dashboard" transform="translate(-96.000000, -42.000000)" fill="#FFFFFF">
+					<g id="home-icon" transform="translate(96.000000, 42.000000)">
+						<rect id="Rectangle" x="0" y="24" width="32" height="25"></rect>
+						<polygon id="Path" points="0 22 32 22 16 0"></polygon>
+					</g>
+				</g>
+			</g>
+		</svg>
+	</a>
+	<input id="search-input" [(ngModel)]="searchTerm" placeholder="Search" (keyup.enter)="search()"/>
+	<div class="float-right">
+		<a id="create-debate-link" routerLink="/create-debate">+ Create debate</a>
+		<a id="logout-link" type="button" (click)="logout()">Logout</a>
+	</div>
+</div>
 
-<p>
-  topbar works!
-</p>
 
 
 

@@ -1,13 +1,27 @@
 <app-topbar></app-topbar>
 
-<input [(ngModel)]="debateForm.title" placeholder="Title"/>
-<input [(ngModel)]="debateForm.imageUrl" placeholder="Image URL"/>
-<input [(ngModel)]="debateForm.subtitle" placeholder="Subtitle"/>
-<input [(ngModel)]="debateForm.description" placeholder="Description" type="text"/>
 
-<input type="button" value="Submit" (click)="createDebate()">
-<input type="button" value="Cancel" (click)="backToDashboard()">
-
-<p>
-  create-debate works!
-</p>
+<div id="form-container">
+	
+		<img 
+		id="debate-image"
+		src="http://cdnapisec.kaltura.com/p/618072/sp/61807200/thumbnail/entry_id/0_jdawzav7/version/100002/width/412/height/256"
+		 alt="Debate thumbnail">
+	
+		<div class="linear-field">
+			<input class="textfield" [(ngModel)]="debateForm.title" placeholder="Title"/>
+		</div>
+		<div class="linear-field">
+		<input class="textfield" [(ngModel)]="debateForm.imageUrl" placeholder="Image URL"/>
+		</div>
+		<div class="linear-field">
+				<input class="textfield" [(ngModel)]="debateForm.subtitle" placeholder="Subtitle"/>
+		</div>
+		<div class="linear-field">			
+			<input class="textfield" [(ngModel)]="debateForm.description" placeholder="Description" type="text"/>
+		</div>
+		<div class="linear-field">
+			<input id="left-btn" class="submit-btn" type="button" value="Submit" (click)="createDebate()">
+			<input id="right-btn" class="cancel-btn"  type="button" value="Cancel" (click)="backToDashboard()">
+		</div>
+</div>
