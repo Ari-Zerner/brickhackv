@@ -1,4 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, SimpleChanges } from '@angular/core';
+import { UserService } from '../services/user.service';
+import { Debate } from '../models/debate';
+import { Opinion } from '../models/opinion';
 
 @Component({
   selector: 'app-opinion-voting',
@@ -7,9 +10,20 @@ import { Component, OnInit } from '@angular/core';
 })
 export class OpinionVotingComponent implements OnInit {
 
-  constructor() { }
+	@Input() debate:Debate;
+	opinionList:Opinion[];// this will be 2 in length
 
-  ngOnInit() {
-  }
+	constructor(private userService:UserService) { }
+
+	ngOnInit() {
+		this.userService.getOpinionPairForVoting(this.debate.id).subscribe((_)=>{
+			this.opinionList = _;
+		});
+	}
+
+	// ngOnChanges(changes:SimpleChanges){
+	// 	console.log("Changes happened");
+		
+	// }
 
 }
