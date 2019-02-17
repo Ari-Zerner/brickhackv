@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, NamedFieldPuns, DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, RecordWildCards, DuplicateRecordFields #-}
 
 ------------------------------------------------------------------------------
 -- | This module is where all the routes and handlers are defined for your
@@ -32,16 +32,19 @@ import           Data
 
 ------------------------------------------------------------------------------
 
-decodeParam :: (MonadSnap m, Read a) => ByteString -> m a
-decodeParam name = do
+pathParam :: (MonadSnap m, Read a) => ByteString -> m a
+pathParam name = do
     val <- getParam name
     case unpackChars <$> val >>= readMaybe of
         Just a -> return a
-        Nothing -> do
-            resp <- getResponse
-            finishWith $
-                setResponseStatus 400 ("Bad/missing path parameter ") $
-                resp
+        Nothing -> getResponse >>= finishWith . setResponseStatus 400 ("Bad/missing path parameter: " <> name)
+
+bodyJson :: (MonadSnap m, FromJSON a) => m a
+bodyJson = do
+  body <- readRequestBody 50000 -- magic number for max body length
+  case decode body of
+      Just a -> return a
+      Nothing -> getResponse >>= finishWith . setResponseStatus 400 "Malformed JSON body"
 
 jsonResponse :: (MonadSnap m, ToJSON a) => a -> m ()
 jsonResponse a = do
@@ -51,84 +54,79 @@ jsonResponse a = do
 
 
 ------------------------------------------------------------------------------
--- | Render login form
-handleLogin :: Maybe T.Text -> Handler App (AuthManager App) ()
-handleLogin authError = heistLocal (I.bindSplices errs) $ render "login"
-  where
-    errs = maybe mempty splice authError
-    splice err = "loginError" ## I.textSplice err
+handleAttemptLogin :: Handler App (AuthManager App) ()
+handleAttemptLogin = do
+  HTTPLogin{..} <- bodyJson
+  let dummy = HTTPUser{id = 0, name = "", email = "", authenticated = True, ..}
+  jsonResponse dummy
 
 
 ------------------------------------------------------------------------------
--- | Handle login submit
-handleLoginSubmit :: Handler App (AuthManager App) ()
-handleLoginSubmit =
-    loginUser "login" "password" Nothing
-              (\_ -> handleLogin err) (redirect "/")
-  where
-    err = Just "Unknown user or password"
-
-
-------------------------------------------------------------------------------
--- | Logs out and redirects the user to the site index.
 handleLogout :: Handler App (AuthManager App) ()
-handleLogout = logout >> redirect "/"
+handleLogout = do
+  HTTPUser{..} <- bodyJson
+  let dummy = HTTPUser{authenticated = False, ..}
+  jsonResponse dummy
 
 
 ------------------------------------------------------------------------------
--- | Handle new user form submit
-handleNewUser :: Handler App (AuthManager App) ()
-handleNewUser = method GET handleForm <|> method POST handleFormSubmit
-  where
-    handleForm = render "new_user"
-    handleFormSubmit = registerUser "login" "password" >> redirect "/"
+handleCreateUser :: Handler App (AuthManager App) ()
+handleCreateUser = do
+  HTTPCreateUser{..} <- bodyJson
+  let dummy = HTTPNewUser{id = Just 0, name = fullname, authenticated = False, ..}
+  jsonResponse dummy
+
+
+------------------------------------------------------------------------------
+handleCreateDebate :: Handler App (AuthManager App) ()
+handleCreateDebate = do
+  HTTPCreateDebate{..} <- bodyJson
+  let dummy = HTTPNewDebate{id = Just 0, ..}
+  jsonResponse dummy
 
 ------------------------------------------------------------------------------
 handleSubjects :: Handler App (AuthManager App) ()
 handleSubjects = method GET allSubjects
     where
-        allSubjects = jsonResponse $ [ Subject{uid = 0, name = "dummy", description = "a topic", author = 0} ]
+        allSubjects = jsonResponse $ [ SQLDebate{uid = 0, name = "dummy", description = "a topic", author = 0} ]
 
 handleSubject :: Handler App (AuthManager App) ()
-handleSubject = decodeParam "subject" >>= \uid -> method GET (getSubject uid)
+handleSubject = pathParam "debate" >>= \uid -> method GET (getSubject uid)
     where
-        getSubject uid = jsonResponse $ Subject{uid, name = "dummy2", description = "another topic", author = 0}
+        getSubject uid = jsonResponse $ SQLDebate{name = "dummy2", description = "another topic", author = 0, ..}
 
 ------------------------------------------------------------------------------
-
 handleOpinions :: Handler App (AuthManager App) ()
 handleOpinions = method GET allOpinions
     where
-        allOpinions = jsonResponse $ [ Opinion{subject = 0, uid = 0, description = "Thing is bad", author = 0} ]
+        allOpinions = jsonResponse $ [ Opinion{debate = 0, uid = 0, description = "Thing is bad", author = 0} ]
 
 ------------------------------------------------------------------------------
 handleVotes :: Handler App (AuthManager App) ()
-handleVotes = decodeParam "subject" >>= \uid -> method POST (allVotes uid)
+handleVotes = pathParam "debate" >>= \uid -> method POST (allVotes uid)
     where
-        allVotes uid = jsonResponse $ Vote{uid, voter = 0, subject = 0, option1 = 0, option2 = 1}
+        allVotes uid = jsonResponse $ Vote{voter = 0, debate = 0, option1 = 0, option2 = 1, ..}
 
 handleVote :: Handler App (AuthManager App) ()
 handleVote = do
-    sid :: Integer <- decodeParam "subject"
-    vid :: Integer <- decodeParam "vote"
+    sid :: Integer <- pathParam "debate"
+    vid :: Integer <- pathParam "vote"
     method POST pass
 
 ------------------------------------------------------------------------------
 -- | The application's routes.
 routes :: [(ByteString, Handler App App ())]
 routes = fmap (with auth) <$>
-         [ ("login",                        handleLoginSubmit)
+         [ ("attempt-login",                handleAttemptLogin)
          , ("logout",                       handleLogout)
-         , ("new_user",                     handleNewUser)
-         , ("hello",                        render "hello")
+         , ("create-user",                  handleCreateUser)
+         , ("create-debate",                handleCreateDebate)
 
-         , ("subject",                      handleSubjects)
-         , ("subject/:subject",             handleSubject)
-         , ("subject/:subject/opinion",     handleOpinions)
-         , ("subject/:subject/vote",        handleVotes)
-         , ("subject/:subject/vote/:vote",  handleVote)
-         ] ++
-         [ ("",         serveDirectory "static")
+         , ("debate",                      handleSubjects)
+         , ("debate/:debate",             handleSubject)
+         , ("debate/:debate/opinion",     handleOpinions)
+         , ("debate/:debate/vote",        handleVotes)
+         , ("debate/:debate/vote/:vote",  handleVote)
          ]
 
 
