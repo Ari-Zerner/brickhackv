@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, RecordWildCards, DuplicateRecordFields, ParallelListComp #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, RecordWildCards, DuplicateRecordFields, ParallelListComp, NamedFieldPuns #-}
 
 ------------------------------------------------------------------------------
 -- | This module is where all the routes and handlers are defined for your
@@ -10,7 +10,9 @@ module Site
 
 ------------------------------------------------------------------------------
 import           Control.Applicative
+import           Control.Monad
 import           Control.Monad.IO.Class
+import           Control.Monad.Fail
 import           Data.ByteString (ByteString)
 import           Data.ByteString.Internal (unpackChars)
 import           Data.Aeson (encode, decode, ToJSON, FromJSON)
@@ -90,11 +92,13 @@ handleCreateDebate = do
 ------------------------------------------------------------------------------
 handleDebateList :: Endpoint
 handleDebateList = do
-  r1 <- traverse (\_ -> liftIO $ randomRIO (0, 99999)) [0..14]
-  r2 <- traverse (\_ -> liftIO $ randomRIO (0, 99999)) [0..14]
-  rb1 <- traverse (\_ -> liftIO $ randomIO) [0..14]
-  rb2 <- traverse (\_ -> liftIO $ randomIO) [0..14]
-  rb3 <- traverse (\_ -> liftIO $ randomIO) [0..14]
+  let maxVal = 99999 :: Int
+      count = [0..14] :: [Int]
+  r1 <- traverse (\_ -> liftIO $ randomRIO (0, maxVal)) count
+  r2 <- traverse (\_ -> liftIO $ randomRIO (0, maxVal)) count
+  rb1 <- traverse (\_ -> liftIO $ randomIO) count
+  rb2 <- traverse (\_ -> liftIO $ randomIO) count
+  rb3 <- traverse (\_ -> liftIO $ randomIO) count
   let dummy = [ HTTPDebate
         { id = i
         , title = "Debate"
@@ -112,6 +116,40 @@ handleDebateList = do
 
 
 ------------------------------------------------------------------------------
+
+bayesianRating :: Double -> -- |^ bayesian average
+                  Int -> -- |^ bayesian vote count
+                  Int -> -- |^ upvotes
+                  Int -> -- |^ of total
+                  Double -- |^ percentage rating in 0..1
+bayesianRating avg count votesFor total =
+  (fromIntegral count * avg + fromIntegral votesFor) /
+  (fromIntegral count +       fromIntegral total)
+
+getWins :: (HasPostgres m, MonadFail m) =>
+           Id -> -- |^ opinion id
+           m (Int, Int) -- |^ wins, total
+getWins id = do
+  -- TODO: this is slow, we should store the count in the db and increment
+  [Only wins] <- query "SELECT COUNT(*) FROM votes WHERE winner=?" (Only id)
+  [Only losses] <- query "SELECT COUNT(*) FROM votes WHERE loser=?" (Only id)
+  return (wins, wins + losses)
+
+getOpinionsWithRanking :: (HasPostgres m, MonadFail m) =>
+                         Id -> -- |^ debate id
+                         m [HTTPOpinion]
+getOpinionsWithRanking id = do
+  sqlOpinions <- query "SELECT * FROM opinions WHERE debate=?" (Only id)
+  forM sqlOpinions $
+    \SQLOpinion {uid, description, author, ..} -> do
+      (wins, total) <- getWins uid
+      let ranking = bayesianRating 0.5 10 wins total
+      return $ HTTPOpinion
+        { id = uid
+        , authorId = author
+        , description = description
+        , ranking = ranking
+        }
 
 handleDebate :: Endpoint
 handleDebate = do
