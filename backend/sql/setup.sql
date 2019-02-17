@@ -22,9 +22,9 @@ CREATE TABLE votes (
   uid int PRIMARY KEY,
   voter int NOT NULL REFERENCES users(uid),
   debate int NOT NULL,
-  option1 int NOT NULL,
-  option2 int NOT NULL,
-  FOREIGN KEY (debate, option1) REFERENCES opinions(debate, uid),
-  FOREIGN KEY (debate, option2) REFERENCES opinions(debate, uid),
-  UNIQUE (voter, debate, option1, option2)
+  winner int NOT NULL,
+  loser int NOT NULL,
+  FOREIGN KEY (debate, winner) REFERENCES opinions(debate, uid),
+  FOREIGN KEY (debate, loser) REFERENCES opinions(debate, uid),
+  UNIQUE (voter, debate, winner, loser)
 );

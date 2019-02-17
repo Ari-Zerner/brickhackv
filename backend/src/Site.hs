@@ -51,10 +51,10 @@ jsonResponse a = do
     writeLBS $ encode a
     modifyResponse $ setHeader "Content-Type" "application/json"
 
-
+type Endpoint = Handler App (AuthManager App) ()
 
 ------------------------------------------------------------------------------
-handleAttemptLogin :: Handler App (AuthManager App) ()
+handleAttemptLogin :: Endpoint
 handleAttemptLogin = do
   HTTPLogin{..} <- bodyJson
   let dummy = HTTPUser{id = 0, name = "", email = "", authenticated = True, ..}
@@ -62,7 +62,7 @@ handleAttemptLogin = do
 
 
 ------------------------------------------------------------------------------
-handleLogout :: Handler App (AuthManager App) ()
+handleLogout :: Endpoint
 handleLogout = do
   HTTPUser{..} <- bodyJson
   let dummy = HTTPUser{authenticated = False, ..}
@@ -70,7 +70,7 @@ handleLogout = do
 
 
 ------------------------------------------------------------------------------
-handleCreateUser :: Handler App (AuthManager App) ()
+handleCreateUser :: Endpoint
 handleCreateUser = do
   HTTPCreateUser{..} <- bodyJson
   let dummy = HTTPNewUser{id = Just 0, name = fullname, authenticated = False, ..}
@@ -78,36 +78,50 @@ handleCreateUser = do
 
 
 ------------------------------------------------------------------------------
-handleCreateDebate :: Handler App (AuthManager App) ()
+handleCreateDebate :: Endpoint
 handleCreateDebate = do
   HTTPCreateDebate{..} <- bodyJson
   let dummy = HTTPNewDebate{id = Just 0, ..}
   jsonResponse dummy
 
+
 ------------------------------------------------------------------------------
-handleSubjects :: Handler App (AuthManager App) ()
+handleDebateList :: Endpoint
+handleDebateList = do
+  let dummy = [] :: [HTTPDebate]
+  jsonResponse dummy
+
+
+------------------------------------------------------------------------------
+handleDebate :: Endpoint
+handleDebate = do
+  let dummy = Nothing :: Maybe HTTPDebate
+  jsonResponse dummy
+
+------------------------------------------------------------------------------
+handleSubjects :: Endpoint
 handleSubjects = method GET allSubjects
     where
         allSubjects = jsonResponse $ [ SQLDebate{uid = 0, name = "dummy", description = "a topic", author = 0} ]
 
-handleSubject :: Handler App (AuthManager App) ()
+handleSubject :: Endpoint
 handleSubject = pathParam "debate" >>= \uid -> method GET (getSubject uid)
     where
         getSubject uid = jsonResponse $ SQLDebate{name = "dummy2", description = "another topic", author = 0, ..}
 
 ------------------------------------------------------------------------------
-handleOpinions :: Handler App (AuthManager App) ()
+handleOpinions :: Endpoint
 handleOpinions = method GET allOpinions
     where
-        allOpinions = jsonResponse $ [ Opinion{debate = 0, uid = 0, description = "Thing is bad", author = 0} ]
+        allOpinions = jsonResponse $ [ SQLOpinion{debate = 0, uid = 0, description = "Thing is bad", author = 0} ]
 
 ------------------------------------------------------------------------------
-handleVotes :: Handler App (AuthManager App) ()
+handleVotes :: Endpoint
 handleVotes = pathParam "debate" >>= \uid -> method POST (allVotes uid)
     where
-        allVotes uid = jsonResponse $ Vote{voter = 0, debate = 0, option1 = 0, option2 = 1, ..}
+        allVotes uid = jsonResponse $ SQLVote{voter = 0, debate = 0, winner = 0, loser = 1, ..}
 
-handleVote :: Handler App (AuthManager App) ()
+handleVote :: Endpoint
 handleVote = do
     sid :: Integer <- pathParam "debate"
     vid :: Integer <- pathParam "vote"
@@ -117,17 +131,15 @@ handleVote = do
 -- | The application's routes.
 routes :: [(ByteString, Handler App App ())]
 routes = fmap (with auth) <$>
-         [ ("attempt-login",                handleAttemptLogin)
-         , ("logout",                       handleLogout)
-         , ("create-user",                  handleCreateUser)
-         , ("create-debate",                handleCreateDebate)
-
-         , ("debate",                      handleSubjects)
-         , ("debate/:debate",             handleSubject)
-         , ("debate/:debate/opinion",     handleOpinions)
-         , ("debate/:debate/vote",        handleVotes)
-         , ("debate/:debate/vote/:vote",  handleVote)
+         [ ("attempt-login",                post handleAttemptLogin)
+         , ("logout",                       post handleLogout)
+         , ("create-user",                  post handleCreateUser)
+         , ("create-debate",                post handleCreateDebate)
+         , ("debate-list",                   get handleDebateList)
+         , ("debate/:debate",                get handleDebate)
          ]
+         where post = method POST
+               get  = method GET
 
 
 ------------------------------------------------------------------------------
