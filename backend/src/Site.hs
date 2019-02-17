@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 
 ------------------------------------------------------------------------------
 -- | This module is where all the routes and handlers are defined for your
@@ -10,6 +10,7 @@ module Site
 
 ------------------------------------------------------------------------------
 import           Control.Applicative
+import           Control.Monad.IO.Class
 import           Data.ByteString (ByteString)
 import           Data.Map.Syntax ((##))
 import qualified Data.Text as T
@@ -19,6 +20,8 @@ import           Snap.Snaplet.Auth
 import           Snap.Snaplet.Auth.Backends.JsonFile
 import           Snap.Snaplet.Heist
 import           Snap.Snaplet.Session.Backends.CookieSession
+import           Snap.Snaplet.PostgresqlSimple
+import           Snap.Snaplet.Auth.Backends.PostgresqlSimple
 import           Snap.Util.FileServe
 import qualified Heist.Interpreted as I
 ------------------------------------------------------------------------------
@@ -58,6 +61,9 @@ handleNewUser = method GET handleForm <|> method POST handleFormSubmit
     handleForm = render "new_user"
     handleFormSubmit = registerUser "login" "password" >> redirect "/"
 
+------------------------------------------------------------------------------
+handleSubject :: Handler App (AuthManager App) ()
+handleSubject = pass
 
 ------------------------------------------------------------------------------
 -- | The application's routes.
@@ -73,16 +79,17 @@ routes = [ ("login",    with auth handleLoginSubmit)
 -- | The application initializer.
 app :: SnapletInit App App
 app = makeSnaplet "app" "An snaplet example application." Nothing $ do
-    h <- nestSnaplet "" heist $ heistInit "templates"
-    s <- nestSnaplet "sess" sess $
+    _heist <- nestSnaplet "" heist $ heistInit "templates"
+    _sess <- nestSnaplet "sess" sess $
            initCookieSessionManager "site_key.txt" "sess" Nothing (Just 3600)
 
     -- NOTE: We're using initJsonFileAuthManager here because it's easy and
     -- doesn't require any kind of database server to run.  In practice,
     -- you'll probably want to change this to a more robust auth backend.
-    a <- nestSnaplet "auth" auth $
-           initJsonFileAuthManager defAuthSettings sess "users.json"
+    -- _db <- nestSnaplet "db" db pgsInit
+    let _db = undefined
+    -- _auth <- nestSnaplet "auth" auth $ initPostgresAuth sess _db
+    _auth <- nestSnaplet "auth" auth $ initJsonFileAuthManager defAuthSettings sess "users.json"
     addRoutes routes
-    addAuthSplices h auth
-    return $ App h s a
-
+    addAuthSplices _heist auth
+    return App{..}
