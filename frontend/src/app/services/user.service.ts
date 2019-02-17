@@ -34,10 +34,6 @@ export class UserService {
 
 	constructor(private http:HttpClient) { }
 
-	testSimpleEndpoint():Observable<any>{
-		return this.http.get<any>("/api/subject/23");
-	}
-
 	attemptLogin(loginAttempt:LoginAttempt):Observable<User>{
 		const httpOptions = {
 			headers: new HttpHeaders({

@@ -1,7 +1,13 @@
 <app-topbar></app-topbar>
 
+<input [(ngModel)]="debate.title" placeholder="Title"/>
+<input [(ngModel)]="debate.imageUrl" placeholder="Image URL"/>
+<input [(ngModel)]="debate.subtitle" placeholder="Subtitle"/>
+<input [(ngModel)]="debate.description" placeholder="Description" type="text"/>
+
+<input type="button" value="Submit" (click)="createDebate()">
+<input type="button" value="Cancel" (click)="backToDashboard()">
+
 <p>
   create-debate works!
 </p>
-
-<a routerLink="/dashboard">Dashboard</a>
