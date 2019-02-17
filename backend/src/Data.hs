@@ -16,20 +16,43 @@ data HTTPLogin = HTTPLogin
 
 data HTTPCreateUser = HTTPCreateUser
     { username :: Text,
-		  fullname :: Text,
-		  email :: Text,
+      fullname :: Text,
+      email :: Text,
       password :: String
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
-data HTTPUser = HTTPUser
-    { id :: Id,
-		  username :: Text,
-		  name :: Text,
-		  email :: Text,
-		  authenticated :: Bool
+data HTTPNewUser = HTTPNewUser
+    { id :: Maybe Id,
+      username :: Text,
+      name :: Text,
+      email :: Text,
+      authenticated :: Bool
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
-data Subject = Subject
+data HTTPUser = HTTPUser
+    { id :: Id
+    , username :: Text
+    , name :: Text
+    , email :: Text
+    , authenticated :: Bool
+    } deriving (Eq, Show, Generic, ToJSON, FromJSON)
+
+data HTTPCreateDebate = HTTPCreateDebate
+    { title :: Text
+    , imageUrl :: Text
+    , subtitle :: Text
+    , description :: Text
+    } deriving (Eq, Show, Generic, ToJSON, FromJSON)
+
+data HTTPNewDebate = HTTPNewDebate
+    { id :: Maybe Id
+    , title :: Text
+    , imageUrl :: Text
+    , subtitle :: Text
+    , description :: Text
+    } deriving (Eq, Show, Generic, ToJSON, FromJSON)
+
+data SQLDebate = SQLDebate
     { uid :: Id
     , name :: Text
     , description :: Text
@@ -42,7 +65,7 @@ data User = User
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
 data Opinion = Opinion
-    { subject :: Id
+    { debate :: Id
     , uid :: Id
     , description :: Text
     , author :: Id
@@ -51,7 +74,7 @@ data Opinion = Opinion
 data Vote = Vote
     { uid :: Id
     , voter :: Id
-    , subject :: Id
+    , debate :: Id
     , option1 :: Id
     , option2 :: Id
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)

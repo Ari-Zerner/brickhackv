@@ -73,35 +73,43 @@ handleLogout = do
 handleCreateUser :: Handler App (AuthManager App) ()
 handleCreateUser = do
   HTTPCreateUser{..} <- bodyJson
-  let dummy = HTTPUser{id = 0, name = fullname, authenticated = False, ..}
+  let dummy = HTTPNewUser{id = Just 0, name = fullname, authenticated = False, ..}
+  jsonResponse dummy
+
+
+------------------------------------------------------------------------------
+handleCreateDebate :: Handler App (AuthManager App) ()
+handleCreateDebate = do
+  HTTPCreateDebate{..} <- bodyJson
+  let dummy = HTTPNewDebate{id = Just 0, ..}
   jsonResponse dummy
 
 ------------------------------------------------------------------------------
 handleSubjects :: Handler App (AuthManager App) ()
 handleSubjects = method GET allSubjects
     where
-        allSubjects = jsonResponse $ [ Subject{uid = 0, name = "dummy", description = "a topic", author = 0} ]
+        allSubjects = jsonResponse $ [ SQLDebate{uid = 0, name = "dummy", description = "a topic", author = 0} ]
 
 handleSubject :: Handler App (AuthManager App) ()
-handleSubject = pathParam "subject" >>= \uid -> method GET (getSubject uid)
+handleSubject = pathParam "debate" >>= \uid -> method GET (getSubject uid)
     where
-        getSubject uid = jsonResponse $ Subject{name = "dummy2", description = "another topic", author = 0, ..}
+        getSubject uid = jsonResponse $ SQLDebate{name = "dummy2", description = "another topic", author = 0, ..}
 
 ------------------------------------------------------------------------------
 handleOpinions :: Handler App (AuthManager App) ()
 handleOpinions = method GET allOpinions
     where
-        allOpinions = jsonResponse $ [ Opinion{subject = 0, uid = 0, description = "Thing is bad", author = 0} ]
+        allOpinions = jsonResponse $ [ Opinion{debate = 0, uid = 0, description = "Thing is bad", author = 0} ]
 
 ------------------------------------------------------------------------------
 handleVotes :: Handler App (AuthManager App) ()
-handleVotes = pathParam "subject" >>= \uid -> method POST (allVotes uid)
+handleVotes = pathParam "debate" >>= \uid -> method POST (allVotes uid)
     where
-        allVotes uid = jsonResponse $ Vote{voter = 0, subject = 0, option1 = 0, option2 = 1, ..}
+        allVotes uid = jsonResponse $ Vote{voter = 0, debate = 0, option1 = 0, option2 = 1, ..}
 
 handleVote :: Handler App (AuthManager App) ()
 handleVote = do
-    sid :: Integer <- pathParam "subject"
+    sid :: Integer <- pathParam "debate"
     vid :: Integer <- pathParam "vote"
     method POST pass
 
@@ -112,12 +120,13 @@ routes = fmap (with auth) <$>
          [ ("attempt-login",                handleAttemptLogin)
          , ("logout",                       handleLogout)
          , ("create-user",                  handleCreateUser)
+         , ("create-debate",                handleCreateDebate)
 
-         , ("subject",                      handleSubjects)
-         , ("subject/:subject",             handleSubject)
-         , ("subject/:subject/opinion",     handleOpinions)
-         , ("subject/:subject/vote",        handleVotes)
-         , ("subject/:subject/vote/:vote",  handleVote)
+         , ("debate",                      handleSubjects)
+         , ("debate/:debate",             handleSubject)
+         , ("debate/:debate/opinion",     handleOpinions)
+         , ("debate/:debate/vote",        handleVotes)
+         , ("debate/:debate/vote/:vote",  handleVote)
          ]
 
 
