@@ -132,12 +132,10 @@ handleDebate = do
   viewCount <- liftIO $ randomRIO (0, 9999)
   [opined, voted, bookmarked] <- sequence $ replicate 3 (liftIO randomIO)
 
-  -- let titles = ["What to have for lunch?", "Wall?", "Which song to play", "Java or JavaScript", "Which candidate?"]
-  -- title <- (titles !!) <$> (liftIO $ randomRIO (0, length titles))
-  let title = fromString $ "Debate " <> show id
+  let title = "Which option?"
 
-  let subtitle = fromString $ "What to do about issue " <> show id
-  let description = "We're confused"
+  let subtitle = "A demo debate"
+  let description = "Votes were generated for these numbered demo options."
 
   opinionCount <- liftIO $ randomRIO (10, 40)
   let list = replicate opinionCount ()
@@ -147,7 +145,7 @@ handleDebate = do
        let ranking = bayesianRating 0.5 5 win (win + lose)
        id <- liftIO $ randomRIO (0, 999)
        authorId <- liftIO $ randomRIO (0, 999)
-       return $ HTTPOpinion { description = "I like this" , ..  })
+       return $ HTTPOpinion { description = "I like option " <> fromString (show id) , ..  })
   let minRanking = foldr1 min (ranking <$> opinions0)
       maxRanking = foldr1 max (ranking <$> opinions0)
   let opinions = map (\a -> a { ranking = (ranking a - minRanking) / (maxRanking - minRanking) } ) opinions0
