@@ -98,34 +98,14 @@ handleDebate = do
   let dummy = Nothing :: Maybe HTTPDebate
   jsonResponse dummy
 
-------------------------------------------------------------------------------
-handleSubjects :: Endpoint
-handleSubjects = method GET allSubjects
-    where
-        allSubjects = jsonResponse $ [ SQLDebate{uid = 0, name = "dummy", description = "a topic", author = 0} ]
-
-handleSubject :: Endpoint
-handleSubject = pathParam "debate" >>= \uid -> method GET (getSubject uid)
-    where
-        getSubject uid = jsonResponse $ SQLDebate{name = "dummy2", description = "another topic", author = 0, ..}
 
 ------------------------------------------------------------------------------
-handleOpinions :: Endpoint
-handleOpinions = method GET allOpinions
-    where
-        allOpinions = jsonResponse $ [ SQLOpinion{debate = 0, uid = 0, description = "Thing is bad", author = 0} ]
-
-------------------------------------------------------------------------------
-handleVotes :: Endpoint
-handleVotes = pathParam "debate" >>= \uid -> method POST (allVotes uid)
-    where
-        allVotes uid = jsonResponse $ SQLVote{voter = 0, debate = 0, winner = 0, loser = 1, ..}
-
-handleVote :: Endpoint
-handleVote = do
-    sid :: Integer <- pathParam "debate"
-    vid :: Integer <- pathParam "vote"
-    method POST pass
+handleOpinionPair :: Endpoint
+handleOpinionPair = do
+  let dummy = Just [ HTTPOpinion{id = 0, authorId = 0, description = "foo", ranking = 0}
+                   , HTTPOpinion{id = 1, authorId = 1, description = "bar", ranking = 1}
+                   ]
+  jsonResponse dummy
 
 ------------------------------------------------------------------------------
 -- | The application's routes.
@@ -137,6 +117,7 @@ routes = fmap (with auth) <$>
          , ("create-debate",                post handleCreateDebate)
          , ("debate-list",                   get handleDebateList)
          , ("debate/:debate",                get handleDebate)
+         , ("opinion-pair/:debateId",        get handleOpinionPair)
          ]
          where post = method POST
                get  = method GET
