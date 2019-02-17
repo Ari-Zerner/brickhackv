@@ -39,7 +39,7 @@ pathParam name = do
     val <- getParam name
     case unpackChars <$> val >>= readMaybe of
         Just a -> return a
-        Nothing -> getResponse >>= finishWith . setResponseStatus 400 ("Bad/missing path parameter ")
+        Nothing -> getResponse >>= finishWith . setResponseStatus 400 ("Bad/missing path parameter: " <> name)
 
 bodyJson :: (MonadSnap m, FromJSON a) => m a
 bodyJson = do
@@ -177,8 +177,16 @@ app = makeSnaplet "app" "An snaplet example application." Nothing $ do
     h <- nestSnaplet "" heist $ heistInit "templates"
     s <- nestSnaplet "sess" sess $
            initCookieSessionManager "site_key.txt" "sess" Nothing (Just 3600)
-    d <- nestSnaplet "db" db $ pgsInit' $ pgsDefaultConfig "host=localhost port=5432 dbname=debate"
-    a <- nestSnaplet "auth" auth $ initPostgresAuth sess d
-    addRoutes routes
-    addAuthSplices h auth
-    return $ App h s a d
+    let dbEnabled = False
+    if dbEnabled
+      then do
+        d <- nestSnaplet "db" db $ pgsInit' $ pgsDefaultConfig "host=localhost port=5432 dbname=debate"
+        a <- nestSnaplet "auth" auth $ initPostgresAuth sess d
+        addRoutes routes
+        addAuthSplices h auth
+        return $ App h s a d
+      else do
+        a <- nestSnaplet "auth" auth $ initJsonFileAuthManager defAuthSettings sess "users.json"
+        addRoutes routes
+        addAuthSplices h auth
+        return $ App h s a undefined
