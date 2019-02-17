@@ -19,7 +19,7 @@ data HTTPCreateUser = HTTPCreateUser
     { username :: Text,
       fullname :: Text,
       email :: Text,
-      password :: String
+      password :: Text
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
 data HTTPNewUser = HTTPNewUser

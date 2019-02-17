@@ -17,6 +17,7 @@ import           Data.ByteString (ByteString)
 import           Data.ByteString.Internal (unpackChars)
 import           Data.Aeson (encode, decode, ToJSON, FromJSON)
 import           Data.Map.Syntax ((##))
+import           Data.String (IsString (..))
 import qualified Data.Text as T
 import           Snap.Core
 import           Snap.Snaplet
@@ -57,27 +58,29 @@ jsonResponse a = do
 
 type Endpoint = Handler App (AuthManager App) ()
 
+
+------------------------------------------------------------------------------
+-- | Logs out and redirects the user to the site index.
+handleLogout :: Handler App (AuthManager App) ()
+handleLogout = logout >> redirect "/"
+
+
 ------------------------------------------------------------------------------
 handleAttemptLogin :: Endpoint
 handleAttemptLogin = do
   HTTPLogin{..} <- bodyJson
-  let dummy = HTTPUser{id = 0, name = "", email = "", authenticated = True, ..}
-  jsonResponse dummy
-
-
-------------------------------------------------------------------------------
-handleLogout :: Endpoint
-handleLogout = do
-  HTTPUser{..} <- bodyJson
-  let dummy = HTTPUser{authenticated = False, ..}
-  jsonResponse dummy
+  result <- loginByUsername username (ClearText $ fromString $ T.unpack password) True
+  user <- case result of
+    Left _ -> getResponse >>= finishWith . setResponseStatus 403 ("Failed auth")
+    Right u -> return u
+  jsonResponse user
 
 ------------------------------------------------------------------------------
 handleCreateUser :: Endpoint
 handleCreateUser = do
   HTTPCreateUser{..} <- bodyJson
-  let dummy = HTTPNewUser{id = Just 0, name = fullname, authenticated = False, ..}
-  jsonResponse dummy
+  createUser username (fromString $ T.unpack password)
+  jsonResponse True
 
 
 ------------------------------------------------------------------------------
@@ -86,7 +89,6 @@ handleCreateDebate = do
   HTTPCreateDebate{..} <- bodyJson
   let dummy = HTTPNewDebate{id = Just 0, ..}
   jsonResponse dummy
-
 
 ------------------------------------------------------------------------------
 handleDebateList :: Endpoint
