@@ -116,6 +116,13 @@ handleVote = do
 
 
 ------------------------------------------------------------------------------
+handleOpine :: Endpoint
+handleOpine = do
+  let dummy = True
+  jsonResponse dummy
+
+
+------------------------------------------------------------------------------
 -- | The application's routes.
 routes :: [(ByteString, Handler App App ())]
 routes = fmap (with auth) <$>
@@ -127,6 +134,7 @@ routes = fmap (with auth) <$>
          , ("debate/:debate",                get handleDebate)
          , ("opinion-pair/:debateId",        get handleOpinionPair)
          , ("vote",                         post handleVote)
+         , ("opine",                        post handleOpine)
          ]
          where post = method POST
                get  = method GET
