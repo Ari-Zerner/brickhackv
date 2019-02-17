@@ -10,6 +10,9 @@ Opinion
     POST /subject/{id}/opinion
 
 Vote:
+    POST /subject/{subjectId}/vote - returns vote data
+    POST /subject/{subjectId}/vote/{voteId} - takes { choice = int }
+
 For opinion: GET voting options
 auth + subject -> two voting options, voting id
 On voting pair: POST choice
