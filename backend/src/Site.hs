@@ -159,18 +159,34 @@ handleDebate :: Endpoint
 handleDebate = do
   id <- pathParam "debate"
   viewCount <- liftIO $ randomRIO (0, 9999)
-  opinionCount <- liftIO $ randomRIO (0, 9999)
   [opined, voted, bookmarked] <- sequence $ replicate 3 (liftIO randomIO)
+
+  let titles = ["What to have for lunch?", "Wall?", "Which song to play", "Java or JavaScript", "Which candidate?"]
+  title <- (titles !!) <$> (liftIO $ randomRIO (0, length titles))
+
+  let subtitle = ""
+  let description = "I'm not sure"
+
+  opinionCount <- liftIO $ randomRIO (10, 40)
+  let list = replicate opinionCount ()
+  opinions0 <- flip traverse list (\_ ->
+    do win <- liftIO $ randomRIO (0, 15)
+       lose <- liftIO $ randomRIO (0, 15)
+       let ranking = bayesianRating 0.5 5 win (win + lose)
+       id <- liftIO $ randomRIO (0, 999)
+       authorId <- liftIO $ randomRIO (0, 999)
+       return $ HTTPOpinion { description = "I like this" , ..  })
+  let minRanking = foldr1 min (ranking <$> opinions0)
+      maxRanking = foldr1 max (ranking <$> opinions0)
+  let opinions = map (\a -> a { ranking = (ranking a - minRanking) / (maxRanking - minRanking) } ) opinions0
+
   let dummy = HTTPDebateDetail
         { title = "Debate"
         , imageUrl = "https://i.huffpost.com/gadgets/slideshows/407618/slide_407618_5105750_free.jpg"
-        , subtitle = "What to do"
-        , description = "We're confused"
-        , opinions = []
+        , subtitle = ""
+        , description = description
         , myOpinion = Nothing
         , .. }
-
-
   jsonResponse dummy
 
 
@@ -225,7 +241,7 @@ app = makeSnaplet "app" "An snaplet example application." Nothing $ do
     h <- nestSnaplet "" heist $ heistInit "templates"
     s <- nestSnaplet "sess" sess $
            initCookieSessionManager "site_key.txt" "sess" Nothing (Just 3600)
-    let dbEnabled = True
+    let dbEnabled = False
     if dbEnabled
       then do
         d <- nestSnaplet "db" db $ pgsInit' $ pgsDefaultConfig "host=localhost port=5432 dbname=debate"
