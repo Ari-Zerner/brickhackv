@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { UserService } from './services/user.service';
 
 @Component({
   selector: 'app-root',
@@ -6,5 +7,13 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'frontend';
+	title = 'frontend';
+
+	constructor(private userService:UserService){	}
+
+	ngOnInit(){
+		console.log("hey app component initialized");
+		this.userService.testSimpleEndpoint().subscribe((_)=>{ console.log("value from server: "+_.name)})
+	}
+
 }
