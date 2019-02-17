@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Debate } from '../models/debate';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -7,9 +9,14 @@ import { Component, OnInit } from '@angular/core';
 })
 export class DashboardComponent implements OnInit {
 
-  constructor() { }
+	debateList:Debate[];
 
-  ngOnInit() {
-  }
+	constructor(private userService:UserService) { }
+
+	ngOnInit() {
+		this.userService.getAllDebates().subscribe((_)=>{
+			this.debateList = _;
+		});
+	}
 
 }

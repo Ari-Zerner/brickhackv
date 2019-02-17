@@ -4,7 +4,18 @@
   debate works!
 </p>
 
+<div *ngIf="debate">
+	{{debate.title}}
 
-<app-opinion-voting></app-opinion-voting>
 
-<app-vote-distribution></app-vote-distribution>
+	Vote for the better opinion
+	<app-opinion-voting [debate]="debate"></app-opinion-voting>
+
+	<app-vote-distribution [debate]="debate"></app-vote-distribution>
+
+
+	<input [(ngModel)]="usersOpinion" placeholder="Write your opinion"/>
+	<input type="button" value="Signup" (click)="postOpinion()">
+
+
+</div>

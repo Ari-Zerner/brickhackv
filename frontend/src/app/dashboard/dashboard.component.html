@@ -4,4 +4,11 @@
   dashboard works!
 </p>
 
+<div *ngFor="let debate of debateList">
+	<a routerLink="/debate/{{debate.id}}"><h1>{{debate.title}}</h1></a>
+	<h2>{{debate.subtitle}}</h2>
+	<h2>{{debate.viewCount}}</h2>
+</div>
+
 <a routerLink="/debate/23">Debate</a>
+

@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
+import { Debate } from '../models/debate';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-vote-distribution',
@@ -7,9 +9,12 @@ import { Component, OnInit } from '@angular/core';
 })
 export class VoteDistributionComponent implements OnInit {
 
-  constructor() { }
+	@Input() debate:Debate;
 
-  ngOnInit() {
-  }
+	constructor(private userService:UserService) { }
+
+	ngOnInit() {
+		// place the dots on the popularity scale (this will mostly be done in the UI)
+	}
 
 }
