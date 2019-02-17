@@ -94,21 +94,22 @@ data HTTPDebateDetail = HTTPDebateDetail
 
 data SQLDebate = SQLDebate
     { uid :: Id
-    , name :: Text
+    , title :: Text
+    , imageUrl :: Text
+    , subtitle :: Text
     , description :: Text
-    , author :: Id
-    } deriving (Eq, Show, Generic, ToJSON, FromJSON, ToRow, FromRow)
-
-data SQLUser = SQLUser
-    { uid :: Id
-    , username :: Text
+    , viewCount :: Int
+    , opinionCount :: Int
+    , bookmarked :: Bool
+    , opined :: Bool
+    , voted :: Bool
     } deriving (Eq, Show, Generic, ToJSON, FromJSON, ToRow, FromRow)
 
 data SQLOpinion = SQLOpinion
-    { debate :: Id
-    , uid :: Id
-    , description :: Text
+    { uid :: Id
+    , debate :: Id
     , author :: Id
+    , description :: Text
     } deriving (Eq, Show, Generic, ToJSON, FromJSON, ToRow, FromRow)
 
 data SQLVote = SQLVote
