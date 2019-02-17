@@ -20,14 +20,8 @@ data Opinion = Opinion
     , author :: Id
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
-data OpinionNew = OpinionNew
-    { text :: T.Text
-    , author :: Id
-    } deriving (Eq, Show, Generic, ToJSON, FromJSON)
-
-data Voting = Voting
+data Vote = Vote
     { votingId :: Id
-    , options :: [Id]
+    , options :: [Opinion]
     , subject :: Id
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)
-
