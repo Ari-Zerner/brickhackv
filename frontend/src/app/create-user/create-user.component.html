@@ -1,12 +1,31 @@
-<input [(ngModel)]="signup.fullname" placeholder="Full name"/>
-<input [(ngModel)]="signup.username" placeholder="Username"/>
-<input [(ngModel)]="signup.email" placeholder="Email"/>
-<input [(ngModel)]="signup.password" placeholder="Password" type="password"/>
-<input [(ngModel)]="confirmPassword" placeholder="Confirm Password" type="password"/>
+<div id="header">
 
-<input type="button" value="Signup" (click)="register()">
-<input type="button" value="Cancel" (click)="backToLogin()">
+</div>
 
-<p>
-  create-user works!
-</p>
+<div id="form-container">
+	<h3>Please enter the following details below:</h3>
+	<div class="linear-field">
+		<input class="textfield" [(ngModel)]="signup.fullname" placeholder="Full name"/>
+	</div>
+	<div class="linear-field">
+		<input class="textfield" [(ngModel)]="signup.username" placeholder="Username"/>
+	</div>
+	<div class="linear-field">
+		<input class="textfield" [(ngModel)]="signup.email" placeholder="Email"/>
+	</div>
+	<div class="linear-field">
+		<input class="textfield" [(ngModel)]="signup.password" placeholder="Password" type="password"/>
+	</div>
+	<div class="linear-field">
+		<input class="textfield" [(ngModel)]="confirmPassword" placeholder="Confirm Password" type="password"/>
+	</div>
+	<div class="linear-field">
+		<input id="left-btn" class="submit-btn" type="button" value="Signup" (click)="register()">
+		<input id="right-btn" class="cancel-btn" type="button" value="Cancel" (click)="backToLogin()">
+	</div>
+
+</div>
+
+<div id="footer">
+
+</div>

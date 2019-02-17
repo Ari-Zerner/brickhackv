@@ -1,10 +1,20 @@
-<p>
-  login works!
-</p>
+<div id="header">
 
+</div>
 
-<input [(ngModel)]="username" placeholder="Username"/>
-<input [(ngModel)]="password" placeholder="Password" type="password"/>
-<input type="button" value="Login" (click)="attemptLogin()">
+<div class="center-children">
+	<h1>Login</h1>
+	<div class="linear-field">
+		<input class="textfield" [(ngModel)]="username" placeholder="Username"/>
+	</div>
+	<div class="linear-field">
+		<input class="textfield" [(ngModel)]="password" placeholder="Password" type="password"/>
+	</div>
+	<input id="login-btn" class="submit-btn" type="button" value="Login" (click)="attemptLogin()">
+	
+	<a routerLink="/create-user">Create User</a>
+</div>
 
-<a routerLink="/create-user">Create User</a>
+<div id="footer">
+
+</div>
