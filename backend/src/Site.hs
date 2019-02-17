@@ -73,7 +73,7 @@ handleLogout = do
 handleCreateUser :: Handler App (AuthManager App) ()
 handleCreateUser = do
   HTTPCreateUser{..} <- bodyJson
-  let dummy = HTTPUser{name = fullname, authenticated = False, ..}
+  let dummy = HTTPUser{id = 0, name = fullname, authenticated = False, ..}
   jsonResponse dummy
 
 ------------------------------------------------------------------------------
@@ -112,15 +112,12 @@ routes = fmap (with auth) <$>
          [ ("attempt-login",                handleAttemptLogin)
          , ("logout",                       handleLogout)
          , ("create-user",                  handleCreateUser)
-         , ("hello",                        render "hello")
 
          , ("subject",                      handleSubjects)
          , ("subject/:subject",             handleSubject)
          , ("subject/:subject/opinion",     handleOpinions)
          , ("subject/:subject/vote",        handleVotes)
          , ("subject/:subject/vote/:vote",  handleVote)
-         ] ++
-         [ ("",         serveDirectory "static")
          ]
 
 

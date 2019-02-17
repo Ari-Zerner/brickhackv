@@ -2,6 +2,7 @@
 log
 site_key.txt
 users.json
+*.cfg
 
 
 # Created by https://www.gitignore.io/api/vim,haskell,angular,visualstudiocode
