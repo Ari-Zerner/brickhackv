@@ -1,4 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
+import { Router } from '@angular/router';
+import { Debate } from '../models/debate';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-create-debate',
@@ -7,9 +10,10 @@ import { Component, OnInit } from '@angular/core';
 })
 export class CreateDebateComponent implements OnInit {
 
-  constructor() { }
+	constructor(private userService:UserService,private router:Router) { }
 
-  ngOnInit() {
-  }
+	ngOnInit() {
+	}
 
+	
 }
