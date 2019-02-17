@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, RecordWildCards, DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, RecordWildCards, DuplicateRecordFields, ParallelListComp #-}
 
 ------------------------------------------------------------------------------
 -- | This module is where all the routes and handlers are defined for your
@@ -10,6 +10,7 @@ module Site
 
 ------------------------------------------------------------------------------
 import           Control.Applicative
+import           Control.Monad.IO.Class
 import           Data.ByteString (ByteString)
 import           Data.ByteString.Internal (unpackChars)
 import           Data.Aeson (encode, decode, ToJSON, FromJSON)
@@ -24,6 +25,7 @@ import           Snap.Snaplet.Session.Backends.CookieSession
 -- import           Snap.Snaplet.PostgresqlSimple
 -- import           Snap.Snaplet.Auth.Backends.PostgresqlSimple
 import           Snap.Util.FileServe
+import           System.Random
 import           Text.Read (readMaybe)
 import qualified Heist.Interpreted as I
 ------------------------------------------------------------------------------
@@ -37,7 +39,7 @@ pathParam name = do
     val <- getParam name
     case unpackChars <$> val >>= readMaybe of
         Just a -> return a
-        Nothing -> getResponse >>= finishWith . setResponseStatus 400 ("Bad/missing path parameter: " <> name)
+        Nothing -> getResponse >>= finishWith . setResponseStatus 400 ("Bad/missing path parameter ")
 
 bodyJson :: (MonadSnap m, FromJSON a) => m a
 bodyJson = do
@@ -88,7 +90,24 @@ handleCreateDebate = do
 ------------------------------------------------------------------------------
 handleDebateList :: Endpoint
 handleDebateList = do
-  let dummy = [] :: [HTTPDebate]
+  r1 <- traverse (\_ -> liftIO $ randomRIO (0, 99999)) [0..14]
+  r2 <- traverse (\_ -> liftIO $ randomRIO (0, 99999)) [0..14]
+  rb1 <- traverse (\_ -> liftIO $ randomIO) [0..14]
+  rb2 <- traverse (\_ -> liftIO $ randomIO) [0..14]
+  rb3 <- traverse (\_ -> liftIO $ randomIO) [0..14]
+  let dummy = [ HTTPDebate
+        { id = i
+        , title = "Debate"
+        , imageUrl = "https://i.huffpost.com/gadgets/slideshows/407618/slide_407618_5105750_free.jpg"
+        , subtitle = "What to do"
+        , description = "We're confused"
+        , viewCount = v
+        , opinionCount = o
+        , bookmarked = b1
+        , opined = b2
+        , voted = b3 } | v <- r1 | o <- r2
+                          | b1 <- rb1 | b2 <- rb2 | b3 <- rb3
+                          | i <- [0..14]]
   jsonResponse dummy
 
 
