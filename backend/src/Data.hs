@@ -9,19 +9,28 @@ import Data.Aeson
 type Id = Int
 
 data Subject = Subject
-    { subjectId :: Id
+    { uid :: Id
     , name :: T.Text
     , description :: T.Text
+    , author :: Id
+    } deriving (Eq, Show, Generic, ToJSON, FromJSON)
+
+data User = User
+    { uid :: Id
+    , username :: T.Text
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
 data Opinion = Opinion
-    { opinionId :: Id
-    , text :: T.Text
+    { subject :: Id
+    , uid :: Id
+    , description :: T.Text
     , author :: Id
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
 data Vote = Vote
-    { votingId :: Id
-    , options :: [Opinion]
+    { uid :: Id
+    , voter :: Id
     , subject :: Id
+    , option1 :: Id
+    , option2 :: Id
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)

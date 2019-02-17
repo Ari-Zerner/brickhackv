@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, NamedFieldPuns, DuplicateRecordFields #-}
 
 ------------------------------------------------------------------------------
 -- | This module is where all the routes and handlers are defined for your
@@ -21,6 +21,8 @@ import           Snap.Snaplet.Auth
 import           Snap.Snaplet.Auth.Backends.JsonFile
 import           Snap.Snaplet.Heist
 import           Snap.Snaplet.Session.Backends.CookieSession
+import           Snap.Snaplet.PostgresqlSimple
+import           Snap.Snaplet.Auth.Backends.PostgresqlSimple
 import           Snap.Util.FileServe
 import           Text.Read (readMaybe)
 import qualified Heist.Interpreted as I
@@ -85,28 +87,25 @@ handleNewUser = method GET handleForm <|> method POST handleFormSubmit
 handleSubjects :: Handler App (AuthManager App) ()
 handleSubjects = method GET allSubjects
     where
-        allSubjects = jsonResponse $ [ Subject 0 "dummy" "a topic" ]
+        allSubjects = jsonResponse $ [ Subject{uid = 0, name = "dummy", description = "a topic", author = 0} ]
 
 handleSubject :: Handler App (AuthManager App) ()
-handleSubject = decodeParam "subject" >>= \sid -> method GET (getSubject sid)
+handleSubject = decodeParam "subject" >>= \uid -> method GET (getSubject uid)
     where
-        getSubject sid = jsonResponse $ Subject sid "dummy2" "another topic"
+        getSubject uid = jsonResponse $ Subject{uid, name = "dummy2", description = "another topic", author = 0}
 
 ------------------------------------------------------------------------------
 
 handleOpinions :: Handler App (AuthManager App) ()
 handleOpinions = method GET allOpinions
     where
-        allOpinions = jsonResponse $ [ Opinion 0 "is bad" 1 ]
+        allOpinions = jsonResponse $ [ Opinion{subject = 0, uid = 0, description = "Thing is bad", author = 0} ]
 
 ------------------------------------------------------------------------------
 handleVotes :: Handler App (AuthManager App) ()
-handleVotes = decodeParam "subject" >>= \sid ->
-    method POST (allVotes sid)
+handleVotes = decodeParam "subject" >>= \uid -> method POST (allVotes uid)
     where
-        opinion1 = Opinion 0 "All weapons should be banned" 0
-        opinion2 = Opinion 1 "Three guns per child" 1
-        allVotes sid = jsonResponse $ Vote 0 [opinion1, opinion2] sid
+        allVotes uid = jsonResponse $ Vote{uid, voter = 0, subject = 0, option1 = 0, option2 = 1}
 
 handleVote :: Handler App (AuthManager App) ()
 handleVote = do
@@ -140,12 +139,8 @@ app = makeSnaplet "app" "An snaplet example application." Nothing $ do
     h <- nestSnaplet "" heist $ heistInit "templates"
     s <- nestSnaplet "sess" sess $
            initCookieSessionManager "site_key.txt" "sess" Nothing (Just 3600)
-
-    -- NOTE: We're using initJsonFileAuthManager here because it's easy and
-    -- doesn't require any kind of database server to run.  In practice,
-    -- you'll probably want to change this to a more robust auth backend.
-    a <- nestSnaplet "auth" auth $
-           initJsonFileAuthManager defAuthSettings sess "users.json"
+    d <- nestSnaplet "db" db $ pgsInit' $ pgsDefaultConfig "host=localhost port=5432 dbname=debate"
+    a <- nestSnaplet "auth" auth $ initPostgresAuth sess d
     addRoutes routes
     addAuthSplices h auth
-    return $ App h s a
+    return $ App h s a d
