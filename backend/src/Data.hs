@@ -92,8 +92,16 @@ data HTTPDebateDetail = HTTPDebateDetail
     , myOpinion :: Maybe HTTPOpinion
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
+data SQLPerson = SQLPerson
+    { uid :: Text
+    , username :: Text
+    , name :: Text
+    , email :: Text
+    }
+
 data SQLDebate = SQLDebate
     { uid :: Id
+    , author :: Text
     , title :: Text
     , imageUrl :: Text
     , subtitle :: Text

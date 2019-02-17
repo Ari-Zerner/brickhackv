@@ -1,5 +1,13 @@
+CREATE TABLE IF NOT EXISTS person (
+  uid text PRIMARY KEY,
+  username text NOT NULL,
+  name text NOT NULL,
+  email text NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS debate (
   uid serial PRIMARY KEY,
+  author text NOT NULL REFERENCES person(uid),
   title text UNIQUE NOT NULL,
   imageUrl text NOT NULL,
   subtitle text NOT NULL,
@@ -14,7 +22,7 @@ CREATE TABLE IF NOT EXISTS debate (
 CREATE TABLE IF NOT EXISTS opinion (
   uid serial PRIMARY KEY,
   debate int NOT NULL REFERENCES debate(uid),
-  author int NOT NULL REFERENCES snap_auth_user(uid),
+  author text NOT NULL REFERENCES person(uid),
   description text NOT NULL,
   UNIQUE (uid, debate),
   UNIQUE (author, debate, description)
@@ -22,7 +30,7 @@ CREATE TABLE IF NOT EXISTS opinion (
 
 CREATE TABLE IF NOT EXISTS vote (
   uid serial PRIMARY KEY,
-  voter int NOT NULL REFERENCES snap_auth_user(uid),
+  voter text NOT NULL REFERENCES person(uid),
   debate int NOT NULL,
   winner int NOT NULL,
   loser int NOT NULL,
