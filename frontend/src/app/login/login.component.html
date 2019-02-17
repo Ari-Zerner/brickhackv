@@ -3,6 +3,8 @@
 </p>
 
 
-<a routerLink="/dashboard">Dashboard</a>
+<input [(ngModel)]="username" placeholder="Username"/>
+<input [(ngModel)]="password" placeholder="Password" type="password"/>
+<input type="button" value="Login" (click)="attemptLogin()">
 
 <a routerLink="/create-user">Create User</a>
