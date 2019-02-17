@@ -8,6 +8,7 @@ import { Debate } from '../models/debate';
 import { Opinion } from '../models/opinion';
 import { Vote } from '../models/vote';
 import { PostOpinion } from '../models/post-opinion';
+import { DebateForm } from '../models/debate-form';
 
 @Injectable({
   providedIn: 'root'
@@ -58,8 +59,8 @@ export class UserService {
 		return this.http.post<User>(UserService.CREATE_USER_URL,signupData,this.postHttpOptions);
 	}
 
-	createDebate(debate:Debate):Observable<Debate>{
-		return this.http.post<Debate>(UserService.CREATE_USER_URL,debate,this.postHttpOptions);
+	createDebate(debateForm:DebateForm):Observable<DebateForm>{
+		return this.http.post<DebateForm>(UserService.CREATE_DEBATE_URL,debateForm,this.postHttpOptions);
 	}
 
 	getAllDebates():Observable<Debate[]>{
