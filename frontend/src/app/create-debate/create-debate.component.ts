@@ -2,7 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { Debate } from '../models/debate';
 import { UserService } from '../services/user.service';
-import { routerNgProbeToken } from '@angular/router/src/router_module';
+import { DebateForm } from '../models/debate-form';
 
 @Component({
   selector: 'app-create-debate',
@@ -11,7 +11,7 @@ import { routerNgProbeToken } from '@angular/router/src/router_module';
 })
 export class CreateDebateComponent implements OnInit {
 
-	@Input() debate = new Debate();
+	@Input() debateForm = new DebateForm();
 
 	constructor(private userService:UserService,private router:Router) { }
 
@@ -19,7 +19,7 @@ export class CreateDebateComponent implements OnInit {
 	}
 
 	createDebate(){
-		this.userService.createDebate(this.debate).subscribe((_)=>{
+		this.userService.createDebate(this.debateForm).subscribe((_)=>{
 			if(_.id!=null){
 				this.router.navigateByUrl("/debate/"+_.id);
 			}else{

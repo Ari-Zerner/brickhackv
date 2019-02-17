@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { Location } from '@angular/common';
+import { Router } from '@angular/router';
 import { UserService } from '../services/user.service';
 
 @Component({
@@ -11,7 +11,7 @@ export class TopbarComponent implements OnInit {
 
 	@Input() searchTerm = "";
 
-	constructor(private userService:UserService,private location:Location) { }
+	constructor(private userService:UserService,private router:Router) { }
 
 	ngOnInit() {
 
@@ -26,7 +26,7 @@ export class TopbarComponent implements OnInit {
 			console.log("logout resut received");
 			if(success){
 				this.userService.currentUser = null;
-				this.location.go("");
+				this.router.navigateByUrl("");
 			}else{
 				// TODO messsae : lougout failed
 				console.log("Logout failed");

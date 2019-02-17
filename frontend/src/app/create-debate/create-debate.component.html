@@ -1,9 +1,9 @@
 <app-topbar></app-topbar>
 
-<input [(ngModel)]="debate.title" placeholder="Title"/>
-<input [(ngModel)]="debate.imageUrl" placeholder="Image URL"/>
-<input [(ngModel)]="debate.subtitle" placeholder="Subtitle"/>
-<input [(ngModel)]="debate.description" placeholder="Description" type="text"/>
+<input [(ngModel)]="debateForm.title" placeholder="Title"/>
+<input [(ngModel)]="debateForm.imageUrl" placeholder="Image URL"/>
+<input [(ngModel)]="debateForm.subtitle" placeholder="Subtitle"/>
+<input [(ngModel)]="debateForm.description" placeholder="Description" type="text"/>
 
 <input type="button" value="Submit" (click)="createDebate()">
 <input type="button" value="Cancel" (click)="backToDashboard()">
