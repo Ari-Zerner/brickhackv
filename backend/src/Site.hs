@@ -65,6 +65,7 @@ routes :: [(ByteString, Handler App App ())]
 routes = [ ("login",    with auth handleLoginSubmit)
          , ("logout",   with auth handleLogout)
          , ("new_user", with auth handleNewUser)
+         , ("hello",    render "hello")
          , ("",         serveDirectory "static")
          ]
 
@@ -85,4 +86,3 @@ app = makeSnaplet "app" "An snaplet example application." Nothing $ do
     addRoutes routes
     addAuthSplices h auth
     return $ App h s a
-
