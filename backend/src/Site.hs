@@ -61,27 +61,24 @@ type Endpoint = Handler App (AuthManager App) ()
 handleAttemptLogin :: Endpoint
 handleAttemptLogin = do
   HTTPLogin{..} <- bodyJson
-  result <- loginByUsername username (ClearText $ fromString $ T.unpack password) True
-  user <- case result of
-    Left _ -> getResponse >>= finishWith . setResponseStatus 403 ("Failed auth")
-    Right u -> return u
-  jsonResponse user
+  let dummy = HTTPUser{id = 0, name = "Foo Bar", email = "foo@bar.com", authenticated = True, ..}
+  jsonResponse dummy
 
 
 ------------------------------------------------------------------------------
-handleLogout :: Handler App (AuthManager App) ()
+handleLogout :: Endpoint
 handleLogout = do
   HTTPUser{..} <- bodyJson
-  logout
-  jsonResponse HTTPUser{authenticated = False, ..}
+  let dummy = HTTPUser{authenticated = False, ..}
+  jsonResponse dummy
 
 
 ------------------------------------------------------------------------------
 handleCreateUser :: Endpoint
 handleCreateUser = do
   HTTPCreateUser{..} <- bodyJson
-  createUser username (fromString $ T.unpack password)
-  jsonResponse True
+  let dummy = HTTPNewUser{id = Just 0, name = fullname, authenticated = False, ..}
+  jsonResponse dummy
 
 
 ------------------------------------------------------------------------------
@@ -103,9 +100,9 @@ handleDebateList = do
   rb3 <- traverse (\_ -> liftIO $ randomIO) count
   let dummy = [ HTTPDebate
         { id = i
-        , title = "Debate"
+        , title = fromString $ "Debate " <> show i
         , imageUrl = "https://i.huffpost.com/gadgets/slideshows/407618/slide_407618_5105750_free.jpg"
-        , subtitle = "What to do"
+        , subtitle = fromString $ "What to do about issue " <> show i
         , description = "We're confused"
         , viewCount = v
         , opinionCount = o
@@ -135,11 +132,12 @@ handleDebate = do
   viewCount <- liftIO $ randomRIO (0, 9999)
   [opined, voted, bookmarked] <- sequence $ replicate 3 (liftIO randomIO)
 
-  let titles = ["What to have for lunch?", "Wall?", "Which song to play", "Java or JavaScript", "Which candidate?"]
-  title <- (titles !!) <$> (liftIO $ randomRIO (0, length titles))
+  -- let titles = ["What to have for lunch?", "Wall?", "Which song to play", "Java or JavaScript", "Which candidate?"]
+  -- title <- (titles !!) <$> (liftIO $ randomRIO (0, length titles))
+  let title = fromString $ "Debate " <> show id
 
-  let subtitle = ""
-  let description = "I'm not sure"
+  let subtitle = fromString $ "What to do about issue " <> show id
+  let description = "We're confused"
 
   opinionCount <- liftIO $ randomRIO (10, 40)
   let list = replicate opinionCount ()
