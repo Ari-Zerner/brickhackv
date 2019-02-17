@@ -22,8 +22,8 @@ import           Snap.Snaplet.Auth
 import           Snap.Snaplet.Auth.Backends.JsonFile
 import           Snap.Snaplet.Heist
 import           Snap.Snaplet.Session.Backends.CookieSession
--- import           Snap.Snaplet.PostgresqlSimple
--- import           Snap.Snaplet.Auth.Backends.PostgresqlSimple
+import           Snap.Snaplet.PostgresqlSimple
+import           Snap.Snaplet.Auth.Backends.PostgresqlSimple
 import           Snap.Util.FileServe
 import           System.Random
 import           Text.Read (readMaybe)
@@ -166,10 +166,8 @@ app = makeSnaplet "app" "An snaplet example application." Nothing $ do
     h <- nestSnaplet "" heist $ heistInit "templates"
     s <- nestSnaplet "sess" sess $
            initCookieSessionManager "site_key.txt" "sess" Nothing (Just 3600)
-    -- d <- nestSnaplet "db" db $ pgsInit' $ pgsDefaultConfig "host=localhost port=5432 dbname=debate"
-    -- a <- nestSnaplet "auth" auth $ initPostgresAuth sess d
-    a <- nestSnaplet "auth" auth $
-           initJsonFileAuthManager defAuthSettings sess "users.json"
+    d <- nestSnaplet "db" db $ pgsInit' $ pgsDefaultConfig "host=localhost port=5432 dbname=debate"
+    a <- nestSnaplet "auth" auth $ initPostgresAuth sess d
     addRoutes routes
     addAuthSplices h auth
-    return $ App h s a --d
+    return $ App h s a d
