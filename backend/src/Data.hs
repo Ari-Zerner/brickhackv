@@ -5,7 +5,6 @@ module Data where
 import qualified Data.Text as T
 import GHC.Generics
 import Data.Aeson
-import Snap.Snaplet.PostgresqlSimple
 
 type Id = Int
 type Text = T.Text
@@ -111,14 +110,14 @@ data SQLDebate = SQLDebate
     , bookmarked :: Bool
     , opined :: Bool
     , voted :: Bool
-    } deriving (Eq, Show, Generic, ToJSON, FromJSON, ToRow, FromRow)
+    } deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
 data SQLOpinion = SQLOpinion
     { uid :: Id
     , debate :: Id
     , author :: Id
     , description :: Text
-    } deriving (Eq, Show, Generic, ToJSON, FromJSON, ToRow, FromRow)
+    } deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
 data SQLVote = SQLVote
     { uid :: Id
@@ -126,4 +125,4 @@ data SQLVote = SQLVote
     , debate :: Id
     , winner :: Id
     , loser :: Id
-    } deriving (Eq, Show, Generic, ToJSON, FromJSON, ToRow, FromRow)
+    } deriving (Eq, Show, Generic, ToJSON, FromJSON)

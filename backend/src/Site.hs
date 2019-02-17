@@ -25,8 +25,6 @@ import           Snap.Snaplet.Auth
 import           Snap.Snaplet.Auth.Backends.JsonFile
 import           Snap.Snaplet.Heist
 import           Snap.Snaplet.Session.Backends.CookieSession
-import           Snap.Snaplet.PostgresqlSimple
-import           Snap.Snaplet.Auth.Backends.PostgresqlSimple
 import           Snap.Util.FileServe
 import           System.Random
 import           Text.Read (readMaybe)
@@ -130,30 +128,6 @@ bayesianRating avg count votesFor total =
   (fromIntegral count * avg + fromIntegral votesFor) /
   (fromIntegral count +       fromIntegral total)
 
-getWins :: (HasPostgres m, MonadFail m) =>
-           Id -> -- |^ opinion id
-           m (Int, Int) -- |^ wins, total
-getWins id = do
-  -- TODO: this is slow, we should store the count in the db and increment
-  [Only wins] <- query "SELECT COUNT(*) FROM votes WHERE winner=?" (Only id)
-  [Only losses] <- query "SELECT COUNT(*) FROM votes WHERE loser=?" (Only id)
-  return (wins, wins + losses)
-
-getOpinionsWithRanking :: (HasPostgres m, MonadFail m) =>
-                         Id -> -- |^ debate id
-                         m [HTTPOpinion]
-getOpinionsWithRanking id = do
-  sqlOpinions <- query "SELECT * FROM opinions WHERE debate=?" (Only id)
-  forM sqlOpinions $
-    \SQLOpinion {uid, description, author, ..} -> do
-      (wins, total) <- getWins uid
-      let ranking = bayesianRating 0.5 10 wins total
-      return $ HTTPOpinion
-        { id = uid
-        , authorId = author
-        , description = description
-        , ranking = ranking
-        }
 
 handleDebate :: Endpoint
 handleDebate = do
@@ -242,15 +216,7 @@ app = makeSnaplet "app" "An snaplet example application." Nothing $ do
     s <- nestSnaplet "sess" sess $
            initCookieSessionManager "site_key.txt" "sess" Nothing (Just 3600)
     let dbEnabled = False
-    if dbEnabled
-      then do
-        d <- nestSnaplet "db" db $ pgsInit' $ pgsDefaultConfig "host=localhost port=5432 dbname=debate"
-        a <- nestSnaplet "auth" auth $ initPostgresAuth sess d
-        addRoutes routes
-        addAuthSplices h auth
-        return $ App h s a d
-      else do
-        a <- nestSnaplet "auth" auth $ initJsonFileAuthManager defAuthSettings sess "users.json"
-        addRoutes routes
-        addAuthSplices h auth
-        return $ App h s a undefined
+    a <- nestSnaplet "auth" auth $ initJsonFileAuthManager defAuthSettings sess "users.json"
+    addRoutes routes
+    addAuthSplices h auth
+    return $ App h s a
