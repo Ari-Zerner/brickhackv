@@ -1,34 +1,39 @@
 
+log
+site_key.txt
+users.json
+
+
 # Created by https://www.gitignore.io/api/vim,haskell,angular,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=vim,haskell,angular,visualstudiocode
 
 ### Angular ###
 ## Angular ##
 # compiled output
-/dist
-/tmp
-/app/**/*.js
-/app/**/*.js.map
+dist
+tmp
+app/**/*.js
+app/**/*.js.map
 
 # dependencies
 /node_modules
 /bower_components
 
 # IDEs and editors
-/.idea
+.idea
 
 # misc
-/.sass-cache
-/connect.lock
-/coverage/*
-/libpeerconnection.log
+.sass-cache
+connect.lock
+coverage/*
+libpeerconnection.log
 npm-debug.log
 testem.log
-/typings
+typings
 
 # e2e
-/e2e/*.js
-/e2e/*.map
+e2e/*.js
+e2e/*.map
 
 #System Files
 .DS_Store
