@@ -11,6 +11,7 @@ module Site
 ------------------------------------------------------------------------------
 import           Control.Applicative
 import           Data.ByteString (ByteString)
+import           Data.Aeson (encode, decode)
 import           Data.Map.Syntax ((##))
 import qualified Data.Text as T
 import           Snap.Core
@@ -23,7 +24,7 @@ import           Snap.Util.FileServe
 import qualified Heist.Interpreted as I
 ------------------------------------------------------------------------------
 import           Application
-
+import           Data
 
 ------------------------------------------------------------------------------
 -- | Render login form
@@ -58,6 +59,22 @@ handleNewUser = method GET handleForm <|> method POST handleFormSubmit
     handleForm = render "new_user"
     handleFormSubmit = registerUser "login" "password" >> redirect "/"
 
+------------------------------------------------------------------------------
+handleSubjects :: Handler App (AuthManager App) ()
+handleSubjects = method GET allSubjects
+    where
+        allSubjects = writeLBS $ encode $ [ Subject 0 "dummy" "a topic" ]
+
+handleSubject :: Handler App (AuthManager App) ()
+handleSubject = getParam "subject" >>= \sid -> method GET (getSubject sid)
+    where
+        getSubject sid = writeLBS $ encode $ Subject 3 "dummy2" "another topic"
+
+------------------------------------------------------------------------------
+handleOpinion :: Handler App (AuthManager App) ()
+handleOpinion = method GET allOpinions
+    where
+        allOpinions =  writeLBS $ encode $ [ Opinion 1 "it's bad" 2 ]
 
 ------------------------------------------------------------------------------
 -- | The application's routes.
@@ -66,6 +83,12 @@ routes = [ ("login",    with auth handleLoginSubmit)
          , ("logout",   with auth handleLogout)
          , ("new_user", with auth handleNewUser)
          , ("hello",    render "hello")
+
+         , ("subject",  with auth handleSubjects)
+         , ("subject/:subject",
+                        with auth handleSubject)
+         , ("opinion",  with auth handleOpinion)
+
          , ("",         serveDirectory "static")
          ]
 
