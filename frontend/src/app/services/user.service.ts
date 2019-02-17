@@ -10,6 +10,7 @@ import { LoginAttempt } from '../models/login-attempt';
 export class UserService {
 
 	public static readonly LOGIN_URL = "/api/attempt-login";
+	public static readonly LOGOUT_URL = "/api/logout";
 
 	currentUser:User = null;
 
@@ -27,5 +28,15 @@ export class UserService {
 			})
 		  };
 		return this.http.post<User>(UserService.LOGIN_URL,loginAttempt,httpOptions);
+	}
+
+	logout():Observable<boolean>{
+		const httpOptions = {
+			headers: new HttpHeaders({
+			  'Content-Type':  'application/json',
+			  'Authorization': 'my-auth-token'
+			})
+		  };
+		return this.http.post<boolean>(UserService.LOGOUT_URL,this.currentUser,httpOptions);
 	}
 }

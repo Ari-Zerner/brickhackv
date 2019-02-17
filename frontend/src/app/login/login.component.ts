@@ -18,6 +18,7 @@ export class LoginComponent implements OnInit {
 		,private location:Location) { }
 
 	ngOnInit() {
+		
 	}
 
 
@@ -29,7 +30,8 @@ export class LoginComponent implements OnInit {
 				this.userService.currentUser = user;
 				this.location.go("/dashboard");
 			}else{
-				//send message that login failed
+				// TODO message: login failed
+				console.log("Login failed");
 			}
 		});
 	}

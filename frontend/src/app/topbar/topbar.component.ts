@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
+import { Location } from '@angular/common';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-topbar',
@@ -7,9 +9,29 @@ import { Component, OnInit } from '@angular/core';
 })
 export class TopbarComponent implements OnInit {
 
-  constructor() { }
+	@Input() searchTerm = "";
 
-  ngOnInit() {
-  }
+	constructor(private userService:UserService,private location:Location) { }
+
+	ngOnInit() {
+
+	}
+
+	search(){
+		console.log("Search for term " + this.searchTerm);
+	}
+
+	logout(){
+		this.userService.logout().subscribe((success)=>{
+			console.log("logout resut received");
+			if(success){
+				this.userService.currentUser = null;
+				this.location.go("");
+			}else{
+				// TODO messsae : lougout failed
+				console.log("Logout failed");
+			}
+		});
+	}
 
 }

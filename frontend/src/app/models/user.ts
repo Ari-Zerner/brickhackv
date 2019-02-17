@@ -1,6 +1,6 @@
 export class User {
 	id:number;
-	usernnae:string;
+	username:string;
 	name:string;
 	email:string;
 	// IMPORTANT we dont hold password on client side
