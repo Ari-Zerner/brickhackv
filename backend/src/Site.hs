@@ -114,7 +114,18 @@ handleDebateList = do
 ------------------------------------------------------------------------------
 handleDebate :: Endpoint
 handleDebate = do
-  let dummy = Nothing :: Maybe HTTPDebateDetail
+  id <- pathParam "debate"
+  viewCount <- liftIO $ randomRIO (0, 9999)
+  opinionCount <- liftIO $ randomRIO (0, 9999)
+  [opined, voted, bookmarked] <- sequence $ replicate 3 (liftIO randomIO)
+  let dummy = HTTPDebate
+        { title = "Debate"
+        , imageUrl = "https://i.huffpost.com/gadgets/slideshows/407618/slide_407618_5105750_free.jpg"
+        , subtitle = "What to do"
+        , description = "We're confused"
+        , .. }
+
+
   jsonResponse dummy
 
 
