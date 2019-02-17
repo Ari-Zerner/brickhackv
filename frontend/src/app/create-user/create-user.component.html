@@ -1,4 +1,12 @@
+<input [(ngModel)]="signup.fullname" placeholder="Full name"/>
+<input [(ngModel)]="signup.username" placeholder="Username"/>
+<input [(ngModel)]="signup.email" placeholder="Email"/>
+<input [(ngModel)]="signup.password" placeholder="Password" type="password"/>
+<input [(ngModel)]="confirmPassword" placeholder="Confirm Password" type="password"/>
+
+<input type="button" value="Signup" (click)="register()">
+<input type="button" value="Cancel" (click)="backToLogin()">
+
 <p>
   create-user works!
 </p>
-<a routerLink="/">Submit (or cancel which leads back to login)</a>
