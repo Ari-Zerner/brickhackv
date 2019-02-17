@@ -52,6 +52,28 @@ data HTTPNewDebate = HTTPNewDebate
     , description :: Text
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
+data HTTPOpinion = HTTPOpinion
+    { id :: Id
+    , authorId :: Id
+    , description :: Text
+    , ranking :: Int
+    } deriving (Eq, Show, Generic, ToJSON, FromJSON)
+
+data HTTPDebate = HTTPDebate
+    { id :: Id
+    , title :: Text
+    , imageUrl :: Text
+    , subtitle :: Text
+    , description :: Text
+    , viewCount :: Int
+    , opinionCount :: Int
+    , bookmarked :: Bool
+    , opined :: Bool
+    , voted :: Bool
+    , opinions :: [HTTPOpinion]
+    , myOpinion :: Maybe HTTPOpinion
+    } deriving (Eq, Show, Generic, ToJSON, FromJSON)
+
 data SQLDebate = SQLDebate
     { uid :: Id
     , name :: Text
@@ -59,22 +81,22 @@ data SQLDebate = SQLDebate
     , author :: Id
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
-data User = User
+data SQLUser = SQLUser
     { uid :: Id
     , username :: Text
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
-data Opinion = Opinion
+data SQLOpinion = SQLOpinion
     { debate :: Id
     , uid :: Id
     , description :: Text
     , author :: Id
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
-data Vote = Vote
+data SQLVote = SQLVote
     { uid :: Id
     , voter :: Id
     , debate :: Id
-    , option1 :: Id
-    , option2 :: Id
+    , winner :: Id
+    , loser :: Id
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)
