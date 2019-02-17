@@ -70,6 +70,19 @@ data HTTPDebate = HTTPDebate
     , bookmarked :: Bool
     , opined :: Bool
     , voted :: Bool
+    } deriving (Eq, Show, Generic, ToJSON, FromJSON)
+
+data HTTPDebateDetail = HTTPDebateDetail
+    { id :: Id
+    , title :: Text
+    , imageUrl :: Text
+    , subtitle :: Text
+    , description :: Text
+    , viewCount :: Int
+    , opinionCount :: Int
+    , bookmarked :: Bool
+    , opined :: Bool
+    , voted :: Bool
     , opinions :: [HTTPOpinion]
     , myOpinion :: Maybe HTTPOpinion
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)

@@ -95,7 +95,7 @@ handleDebateList = do
 ------------------------------------------------------------------------------
 handleDebate :: Endpoint
 handleDebate = do
-  let dummy = Nothing :: Maybe HTTPDebate
+  let dummy = Nothing :: Maybe HTTPDebateDetail
   jsonResponse dummy
 
 
