@@ -24,19 +24,23 @@
 				<h2>{{debate.viewCount}} Views</h2>
 			</div>
 			
-			Vote for the better opinion
+			<h3>
+				Vote for the better opinion
+			</h3>
 			<app-opinion-voting [debate]="debate"></app-opinion-voting>
 		
 			<app-vote-distribution [debate]="debate"></app-vote-distribution>
 		
-			<div *ngIf="!debate.myOpinion">
-				<input class="textfield" [(ngModel)]="usersOpinion" placeholder="Write your opinion"/>
-				<input class="submit-btn" type="button" value="Comment" (click)="postOpinion()">
-			</div>
-		
-			<div *ngIf="debate.myOpinion">
-				<h1>Your Opinion</h1>
-				<h2>{{debate.myOpinion.description}}</h2>
+			<div id="my-comment">
+				<div *ngIf="!debate.myOpinion">
+					<input class="textfield" [(ngModel)]="usersOpinion" placeholder="Write your opinion"/>
+					<input class="submit-btn" type="button" value="Comment" (click)="postOpinion()">
+				</div>
+			
+				<div *ngIf="debate.myOpinion">
+					<h1>Your Opinion</h1>
+					<h2>{{debate.myOpinion.description}}</h2>
+				</div>
 			</div>
 	</div>
 
