@@ -1,14 +1,27 @@
 <app-topbar></app-topbar>
 
-<p>
-  dashboard works!
-</p>
+<div id="dashboard-container">
+	<h1>Dashboard</h1>
+	
+	<div *ngFor="let debate of debateList">
+		<a routerLink="/debate/{{debate.id}}"><h1>{{debate.title}}</h1></a>
+		<h2>{{debate.subtitle}}</h2>
+		<h2>{{debate.viewCount}}</h2>
+	</div>
+	
+	<!-- <a routerLink="/debate/23"></a>Debate</a> -->
+	<div class="debate-box" style="background-image: url('https://edservices.wiley.com/wp-content/uploads/2017/04/Strategies-for-Online-Discussion-image-705x591.jpg')">
+		<div class="debate-detail">
+			<a routerLink="/debate/23"><h4>Title</h4></a>
+			<h5>A brief subtitle describing the debate</h5>
+		</div>
+	</div>
 
-<div *ngFor="let debate of debateList">
-	<a routerLink="/debate/{{debate.id}}"><h1>{{debate.title}}</h1></a>
-	<h2>{{debate.subtitle}}</h2>
-	<h2>{{debate.viewCount}}</h2>
+	<div class="debate-box" style="background-image: url('https://edservices.wiley.com/wp-content/uploads/2017/04/Strategies-for-Online-Discussion-image-705x591.jpg')">
+		<div class="debate-detail">
+			<a routerLink="/debate/23"><h4>Title</h4></a>
+			<h5>A brief subtitle describing the debate</h5>
+		</div>
+	</div>
 </div>
-
-<a routerLink="/debate/23">Debate</a>
 
