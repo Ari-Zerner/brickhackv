@@ -171,3 +171,15 @@ Vote on the Opinion Pair:
 	}
 	Response Data:
 	true/false	<-- based on weather the vote was registered or not (basically a successful submission)
+
+Post an opinion:
+	POST
+	/opine
+	Request Data:
+	{
+		debateId:number,
+		userId:number,
+		opinion:string
+	}
+	Response Data:
+	true/false	<-- successful submission or not

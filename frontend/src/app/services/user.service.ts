@@ -7,6 +7,7 @@ import { Signup } from '../models/signup';
 import { Debate } from '../models/debate';
 import { Opinion } from '../models/opinion';
 import { Vote } from '../models/vote';
+import { PostOpinion } from '../models/post-opinion';
 
 @Injectable({
   providedIn: 'root'
@@ -21,6 +22,7 @@ export class UserService {
 	public static readonly DEBATE_URL = "/api/debate/";
 	public static readonly OPINION_PAIR_URL = "/api/opinion-pair/";
 	public static readonly VOTE_URL = "/api/vote";
+	public static readonly POST_OPINION_URL = "/api/opinion";
 
 	currentUser:User = null;
 	private readonly postHttpOptions = {
@@ -76,7 +78,11 @@ export class UserService {
 		return this.http.get<Opinion[]>(UserService.OPINION_PAIR_URL+debateId+"/"+this.currentUser.id);
 	}
 
-	vote(vote:Vote):Observable<User>{
-		return this.http.post<User>(UserService.VOTE_URL,vote,this.postHttpOptions);
+	vote(vote:Vote):Observable<boolean>{
+		return this.http.post<boolean>(UserService.VOTE_URL,vote,this.postHttpOptions);
+	}
+
+	opine(postOpinion:PostOpinion):Observable<boolean>{
+		return this.http.post<boolean>(UserService.POST_OPINION_URL,postOpinion,this.postHttpOptions);
 	}
 }
