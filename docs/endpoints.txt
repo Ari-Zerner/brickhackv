@@ -1,0 +1,173 @@
+Login Attempt:
+	POST
+	/attempt-login
+	Request Data:
+	{
+		username:string,
+		password:string
+	}
+	Response Data:
+	{
+		id:number,
+		username:string,
+		name:string,
+		email:string,
+		authenticated:boolean,
+	}
+Logout Attempt:
+	POST
+	/logout
+	Request Data:
+	{
+		id:number,
+		username:string,
+		name:string,
+		email:string,
+		authenticated:boolean,	<--- This will be true initially
+	}
+	Response Data:
+	{
+		id:number,
+		username:string,
+		name:string,
+		email:string,
+		authenticated:boolean,	<--- This will be false on successful logout
+	}
+
+Create user:
+	POST
+	/create-user
+	Request Data:
+	{
+		fullname:string,
+		username:string,
+		email:string,
+		password:string,
+	}
+	Response Data:
+	{
+		id:number,	<-- if this is null, this is assumed to be a unsuccessful submission
+		username:string,
+		name:string,
+		email:string,
+		authenticated:boolean,	<--- This will be false (we will redirect back to login screen)
+	}
+
+Create Debate:
+	POST
+	/create-debate
+	Request Data:
+	{
+		title:string,
+		imageUrl:string,
+		subtitle:string,
+		description:string,
+	}
+	Response Data:
+	{
+		id:number,	<-- if this is null, this is assumed to be a unsuccessful submission
+		title:string,
+		imageUrl:string,
+		subtitle:string,
+		description:string,
+	}
+
+Get All Debates: 
+	GET
+	/debate-list
+	Response Data:
+	[
+		{
+			id:number,
+			title:string,
+			imageUrl:string,
+			subtitle:string,
+			description:string,
+			viewCount:number,
+			opinionCount:number,
+			bookmarked:boolean,
+			opined:boolean,
+			voted:boolean,
+		},
+		{
+			id:number,
+			title:string,
+			imageUrl:string,
+			subtitle:string,
+			description:string,
+			viewCount:number,
+			opinionCount:number,
+			bookmarked:boolean,
+			opined:boolean,
+			voted:boolean,
+		},...
+	]
+
+Get Single Debate: 
+	GET
+	/debate/{id} <-- id is the path parameter
+	Response Data:
+	{
+		id:number,
+		title:string,
+		imageUrl:string,
+		subtitle:string,
+		description:string,
+		viewCount:number,
+		opinionCount:number,
+		bookmarked:boolean,
+		opined:boolean,
+		voted:boolean,
+		opinions:[
+			 {
+				id:number,
+				authorId:number,
+				description:string,
+				ranking:number,
+			},
+			{
+				id:number,
+				authorId:number,
+				description:string,
+				ranking:number,
+			},...
+		]
+		myOpinion:{	<-- this could be null if user did not submit any opinion
+					id:number,
+					authorId:number,
+					description:string,
+					ranking:number,
+				},
+	}
+	
+Get Opinion Pair for comparision:
+	GET
+	/opinion-pair/{debateId}/{userId}
+	Response Data:
+	[
+		{
+			id:number,
+			authorId:number,
+			description:string,
+			ranking:number,	<-- You can skip this, I am only keeping this for structure
+		},
+		{
+			id:number,
+			authorId:number,
+			description:string,
+			ranking:number,	<-- You can skip this, I am only keeping this for structure
+		}
+	]
+
+Vote on the Opinion Pair:
+	POST
+	/vote
+	Request Data:
+	{
+		debateId:number,
+		voterId:number,
+		winningOpinionId:number,
+		losinOpinionId:number,
+	}
+	Response Data:
+	true/false	<-- based on weather the vote was registered or not (basically a successful submission)
