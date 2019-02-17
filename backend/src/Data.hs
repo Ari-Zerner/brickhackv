@@ -60,6 +60,10 @@ data HTTPOpinion = HTTPOpinion
     , ranking :: Double
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)
 
+data HTTPNewOpinion = HTTPNewOpinion
+    { description :: Text
+    } deriving (Eq, Show, Generic, ToJSON, FromJSON)
+
 data HTTPDebate = HTTPDebate
     { id :: Id
     , title :: Text

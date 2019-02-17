@@ -72,7 +72,6 @@ handleLogout = do
   let dummy = HTTPUser{authenticated = False, ..}
   jsonResponse dummy
 
-
 ------------------------------------------------------------------------------
 handleCreateUser :: Endpoint
 handleCreateUser = do
@@ -189,7 +188,10 @@ handleVote = do
 ------------------------------------------------------------------------------
 handleOpine :: Endpoint
 handleOpine = do
-  let dummy = True
+  did :: Id <- pathParam "debateId"
+  HTTPNewOpinion {..} <- bodyJson
+  -- [id] <- get from auth?
+  let dummy = 0 :: Id
   jsonResponse dummy
 
 
@@ -203,9 +205,9 @@ routes = fmap (with auth) <$>
          , ("create-debate",                post handleCreateDebate)
          , ("debate-list",                   get handleDebateList)
          , ("debate/:debate",                get handleDebate)
-         , ("opinion-pair/:debateId",        get handleOpinionPair)
+         , ("opinion-pair/:debateId",       post handleOpinionPair)
          , ("vote",                         post handleVote)
-         , ("opine",                        post handleOpine)
+         , ("opine/:debateId",              post handleOpine)
          ]
          where post = method POST
                get  = method GET
