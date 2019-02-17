@@ -153,10 +153,7 @@ handleDebate = do
   let opinions = map (\a -> a { ranking = (ranking a - minRanking) / (maxRanking - minRanking) } ) opinions0
 
   let dummy = HTTPDebateDetail
-        { title = "Debate"
-        , imageUrl = "https://i.huffpost.com/gadgets/slideshows/407618/slide_407618_5105750_free.jpg"
-        , subtitle = ""
-        , description = description
+        { imageUrl = "https://i.huffpost.com/gadgets/slideshows/407618/slide_407618_5105750_free.jpg"
         , myOpinion = Nothing
         , .. }
   jsonResponse dummy
